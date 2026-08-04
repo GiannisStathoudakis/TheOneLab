@@ -12,11 +12,7 @@ spec:
     chart: longhorn
     targetRevision: v1.12.0
     helm:
-      values: |
-        global:
-          nodeSelector:
-            disktype: ssd
-            
+      values: |          
         longhornUI:
           replicas: 1
           
