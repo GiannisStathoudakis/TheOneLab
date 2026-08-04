@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-addons
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - app: vault
+            path: Apps/Vault
+          - app: cert-manager
+            path: Apps/Cert-Manager
+          - app: eso
+            path: Apps/External-Secrets
+
+  template:
+    metadata:
+      name: '{{app}}-root'
+    spec:
+      project: default
+      source:
+        repoURL: git@github.com:GiannisStathoudakis/TheOneLab.git
+        targetRevision: HEAD
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
