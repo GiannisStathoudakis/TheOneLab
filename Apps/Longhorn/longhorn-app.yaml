@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: longhorn
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: default
+  source:
+    repoURL: https://charts.longhorn.io
+    chart: longhorn
+    targetRevision: v1.12.0
+    helm:
+      values: |
+        global:
+          nodeSelector:
+            disktype: ssd
+            
+        longhornUI:
+          replicas: 1
+          
+        persistence:
+          defaultClass: true
+          defaultClassReplicaCount: 1
+          
+        defaultSettings:
+          defaultReplicaCount: 1
+          taintToleration: "node-role.kubernetes.io/control-plane=true:NoSchedule;node-role.kubernetes.io/master=true:NoSchedule"
+          systemManagedComponentsNodeSelector: "disktype:ssd"
+          
+        preUpgradeChecker:
+          jobEnabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: longhorn-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

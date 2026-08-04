@@ -19,6 +19,8 @@ spec:
             path: Apps/Envoy
           - app: argocd
             path: Apps/Argocd
+          - app: longhorn
+            path: Apps/Longhorn
 
   template:
     metadata:
