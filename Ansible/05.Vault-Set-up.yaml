@@ -9,7 +9,7 @@
   tasks:
     - name: 01. Execute Vault setup script inside Pod via stdin
       ansible.builtin.shell: |
-        /var/lib/rancher/rke2/bin/kubectl --kubeconfig {{ kubeconfig_path }} exec -i vault-0 -n vault -- sh -s -- "{{ cloudflare_api_token }}" "{{ email }}" << 'EOF'
+        /var/lib/rancher/rke2/bin/kubectl --kubeconfig {{ kubeconfig_path }} exec -i vault-0 -n vault -- sh -s -- "{{ cloudflare_api_token }}" << 'EOF'
         {{ lookup('file', 'files/vault-init.sh') }}
         EOF
       register: vault_setup_output

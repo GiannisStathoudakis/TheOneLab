@@ -45,4 +45,4 @@ vault write auth/kubernetes/role/eso-role \
     policies=eso-policy \
     ttl=24h
 
-vault kv put secret/cloudflare api-token="$CLOUDFLARE_TOKEN" email="$EMAIL"
+vault kv put secret/cloudflare api-token="$CLOUDFLARE_TOKEN"
