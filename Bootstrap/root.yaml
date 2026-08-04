@@ -17,6 +17,8 @@ spec:
             path: Apps/Cilium
           - app: envoy
             path: Apps/Envoy
+          - app: argocd
+            path: Apps/Argocd
 
   template:
     metadata:
