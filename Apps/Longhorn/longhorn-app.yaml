@@ -13,6 +13,9 @@ spec:
     targetRevision: v1.12.0
     helm:
       values: |          
+        global:
+          nodeSelector: {}
+
         longhornUI:
           replicas: 1
           
