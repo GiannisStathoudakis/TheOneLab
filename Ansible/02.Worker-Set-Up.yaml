@@ -1,0 +1,120 @@
+---
+- hosts: worker
+  become: true
+  
+  vars_files:
+    - files/secrets.yml
+
+  tasks:
+    - name: 01. Install updates for Ubuntu
+      tags: always
+      ansible.builtin.apt:
+        upgrade: dist
+        update_cache: yes
+        autoremove: yes
+
+    - name: 02. Disable UFW Firewall
+      ansible.builtin.systemd:
+        name: ufw
+        state: stopped
+        enabled: false
+
+    - name: 03. Disable swap
+      ansible.builtin.command: swapoff -a
+      when: ansible_swaptotal_mb > 0
+
+    - name: 04. Disable swap permanently
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^([^#\n]*?\sswap\s+.*)$'
+        replace: '# \1'
+
+    - name: 05. Install WireGuard + Longhorn packages
+      ansible.builtin.apt:
+        name:
+          - wireguard        # Required for Cilium WireGuard encryption
+          - wireguard-tools  # Required for Cilium
+          - open-iscsi       # Required for Longhorn
+          - nfs-common       # Required for Longhorn
+        state: present
+
+    - name: 06. Ensure iscsid service is active
+      ansible.builtin.systemd:
+        name: iscsid
+        state: started
+        enabled: true
+
+    - name: 07. Load required kernel modules on boot
+      ansible.builtin.copy:
+        dest: /etc/modules-load.d/k8s.conf
+        content: |
+          overlay
+          br_netfilter
+          iscsi_tcp
+        mode: '0644'
+
+    - name: 08. Load kernel modules immediately
+      ansible.builtin.command: modprobe {{ item }}
+      loop:
+        - overlay
+        - br_netfilter
+        - iscsi_tcp
+      changed_when: false
+
+    - name: 09. Set kernel sysctl parameters for Cilium & Kubernetes
+      ansible.builtin.sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        sysctl_set: true
+        state: present
+        reload: true
+      loop:
+        - { name: 'net.ipv4.ip_forward', value: '1' }
+        - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }
+
+    - name: 10. Create RKE2 directory
+      ansible.builtin.file:
+        path: /etc/rancher/rke2
+        state: directory
+        mode: '0755'
+
+    - name: 11. Write RKE2 worker configuration
+      ansible.builtin.copy:
+        dest: /etc/rancher/rke2/config.yaml
+        content: |
+          server: https://{{ master_ip }}:9345
+          token: {{ node_token }}
+        mode: '0600'
+
+    - name: 12. Download and execute RKE2 agent installer
+      ansible.builtin.shell: |
+        curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" sh -
+      args:
+        creates: /usr/local/bin/rke2
+
+    - name: 13. Enable and start rke2-agent
+      ansible.builtin.systemd:
+        name: rke2-agent
+        state: started
+        enabled: true
+
+    - name: 14. Add RKE2 binaries to worker PATH
+      ansible.builtin.lineinfile:
+        path: "/home/{{ admin_user }}/.bashrc"
+        line: "export PATH=$PATH:/var/lib/rancher/rke2/bin"
+        create: true
+        mode: '0644'
+        owner: "{{ admin_user }}"
+
+    - name: 15. Disable Root SSH Login
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+      notify: Restart SSH
+
+  handlers:
+    - name: Restart SSH
+      ansible.builtin.service:
+        name: ssh
+        state: restarted

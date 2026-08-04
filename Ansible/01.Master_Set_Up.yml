@@ -1,0 +1,152 @@
+---
+- hosts: master
+  become: true
+
+  tasks:
+    - name: 01. Install updates for Ubuntu
+      tags: always
+      ansible.builtin.apt:
+        upgrade: dist
+        update_cache: yes
+        autoremove: yes
+
+    - name: 02. Disable UFW Firewall
+      ansible.builtin.systemd:
+        name: ufw
+        state: stopped
+        enabled: false
+
+    - name: 03. Disable swap
+      ansible.builtin.command: swapoff -a
+      when: ansible_swaptotal_mb > 0
+
+    - name: 04. Disable swap permanently
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^([^#\n]*?\sswap\s+.*)$'
+        replace: '# \1'
+
+    - name: 05. Install WireGuard + Longhorn packages
+      ansible.builtin.apt:
+        name:
+          - wireguard        # Required for Cilium WireGuard encryption
+          - wireguard-tools  # Required for Cilium
+          - open-iscsi       # Required for Longhorn
+          - nfs-common       # Required for Longhorn
+        state: present
+
+    - name: 06. Ensure iscsid service is active
+      ansible.builtin.systemd:
+        name: iscsid
+        state: started
+        enabled: true
+
+    - name: 07. Load required kernel modules on boot
+      ansible.builtin.copy:
+        dest: /etc/modules-load.d/k8s.conf
+        content: |
+          overlay
+          br_netfilter
+          iscsi_tcp
+        mode: '0644'
+
+    - name: 08. Load kernel modules immediately
+      ansible.builtin.command: modprobe {{ item }}
+      loop:
+        - overlay
+        - br_netfilter
+        - iscsi_tcp
+      changed_when: false
+
+    - name: 09. Set kernel sysctl parameters for Cilium & Kubernetes
+      ansible.builtin.sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        sysctl_set: true
+        state: present
+        reload: true
+      loop:
+        - { name: 'net.ipv4.ip_forward', value: '1' }
+        - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }
+
+    - name: 10. Create RKE2 directory
+      ansible.builtin.file:
+        path: /etc/rancher/rke2
+        state: directory
+        mode: '0755'
+
+    - name: 11. Write RKE2 master configuration file
+      ansible.builtin.copy:
+        dest: /etc/rancher/rke2/config.yaml
+        content: |
+          write-kubeconfig-mode: "0644"
+          cni: none
+          disable-kube-proxy: true
+          disable:
+            - rke2-ingress-nginx
+            - rke2-traefik
+            - rke2-servicelb
+        mode: '0600'
+
+    - name: 12. Download and execute RKE2 installer
+      ansible.builtin.shell: |
+        curl -sfL https://get.rke2.io | sh -
+      args:
+        creates: /usr/local/bin/rke2
+
+    - name: 13. Enable and start rke2-server
+      ansible.builtin.systemd:
+        name: rke2-server
+        state: started
+        enabled: true
+
+    - name: 14. Create .kube directory for admin user
+      ansible.builtin.file:
+        path: "/home/{{ admin_user }}/.kube"
+        state: directory
+        mode: '0755'
+        owner: "{{ admin_user }}"
+
+    - name: 15. Copy cluster kubeconfig to local user
+      ansible.builtin.copy:
+        src: /etc/rancher/rke2/rke2.yaml
+        dest: "/home/{{ admin_user }}/.kube/config"
+        remote_src: true
+        mode: '0600'
+        owner: "{{ admin_user }}"
+
+    - name: 16. Add RKE2 binaries to user PATH
+      ansible.builtin.lineinfile:
+        path: "/home/{{ admin_user }}/.bashrc"
+        line: "export PATH=$PATH:/var/lib/rancher/rke2/bin"
+        create: true
+        mode: '0644'
+        owner: "{{ admin_user }}"
+
+    - name: 17. Install Latest Helm (Helm 4)
+      ansible.builtin.shell: |
+        curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      args:
+        creates: /usr/local/bin/helm
+
+    - name: 18. Retrieve RKE2 node token
+      ansible.builtin.slurp:
+        src: /var/lib/rancher/rke2/server/node-token
+      register: rke2_token_file
+
+    - name: 19. Print the RKE2 node token
+      ansible.builtin.debug:
+        msg: "RKE2 Node Token is: {{ rke2_token_file.content | b64decode | trim }}"
+
+    - name: 20. Disable Root SSH Login
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+      notify: Restart SSH
+
+  handlers:
+    - name: Restart SSH
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
