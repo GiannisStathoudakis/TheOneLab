@@ -7,8 +7,8 @@ spec:
   generators:
     - list:
         elements:
-          #- app: vault
-          #  path: Apps/Vault
+          - app: vault
+            path: Apps/Vault
           - app: cert-manager
             path: Apps/Cert-Manager
           - app: eso
