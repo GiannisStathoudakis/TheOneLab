@@ -49,7 +49,7 @@ metadata:
 spec:
   parentRefs:
   - name: lab-gateway
-    namespace: argocd
+    namespace: envoy-gateway-system
     sectionName: https
   hostnames: 
   - "argocd.kublab.org"
