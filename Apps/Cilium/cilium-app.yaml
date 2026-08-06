@@ -14,6 +14,7 @@ spec:
     helm:
       values: |
         kubeProxyReplacement: "true"
+        localRedirectPolicy: true
         k8sServiceHost: "192.168.80.131"
         k8sServicePort: 6443
         hostFirewall:
