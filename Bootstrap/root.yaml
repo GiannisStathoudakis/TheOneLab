@@ -27,6 +27,8 @@ spec:
             path: Apps/Technitium-DNS
           - app:  grafana
             path: Apps/Grafana
+          - app:  garage
+            path: Apps/Garage
 
   template:
     metadata:
