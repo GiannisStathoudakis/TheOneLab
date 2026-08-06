@@ -5,7 +5,7 @@ metadata:
   namespace: dns
 spec:
   type: ClusterIP
-  ClusterIP: 10.43.238.5
+  ClusterIP: 10.43.4.193
   selector:
     app: technitium
   ports:
