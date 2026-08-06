@@ -1,29 +1,25 @@
 ---
 - hosts: master
-  become: true
   vars_files:
     - files/cluster-keys.json
     - files/secrets.yml
   
-  vars:
-    kubectl_cmd: "/var/lib/rancher/rke2/bin/kubectl --kubeconfig /etc/rancher/rke2/rke2.yaml"
-
   tasks: 
     - name: 01. Extract Garage Node ID
       ansible.builtin.shell: |
-        {{ kubectl_cmd }} exec -n garage garage-0 -- ./garage status | grep -E '^[0-9a-f]{16}' | head -n 1 | awk '{print $1}'
+        kubectl exec -n garage garage-0 -- ./garage status | grep -E '^[0-9a-f]{16}' | head -n 1 | awk '{print $1}'
       register: garage_node_id
       changed_when: false
 
     - name: 02. Assign storage capacity to the Node
       ansible.builtin.command: >
-        {{ kubectl_cmd }} exec -n garage garage-0 -- ./garage layout assign {{ garage_node_id.stdout }} --zone dc1 --capacity 20G
+        kubectl exec -n garage garage-0 -- ./garage layout assign {{ garage_node_id.stdout }} --zone dc1 --capacity 20G
       register: layout_assign
       changed_when: "'Assigning' in layout_assign.stdout"
       ignore_errors: true
 
     - name: 03. Apply the storage layout
-      ansible.builtin.command: "{{ kubectl_cmd }} exec -n garage garage-0 -- ./garage layout apply --version 1"
+      ansible.builtin.command: "kubectl exec -n garage garage-0 -- ./garage layout apply --version 1"
       register: layout_apply
       changed_when: "'Applied' in layout_apply.stdout"
       until: layout_apply.rc == 0
@@ -31,7 +27,7 @@
       delay: 5
 
     - name: 04. Create S3 Buckets for the Grafana Stack
-      ansible.builtin.command: "{{ kubectl_cmd }} exec -n garage garage-0 -- ./garage bucket create {{ item }}"
+      ansible.builtin.command: "kubectl exec -n garage garage-0 -- ./garage bucket create {{ item }}"
       loop:
         - loki-logs
         - tempo-traces
@@ -40,7 +36,7 @@
       ignore_errors: true
 
     - name: 05. Generate S3 API Keys
-      ansible.builtin.command: "{{ kubectl_cmd }} exec -n garage garage-0 -- ./garage key create {{ item }}-key"
+      ansible.builtin.command: "kubectl exec -n garage garage-0 -- ./garage key create {{ item }}-key"
       loop:
         - loki
         - tempo
@@ -50,7 +46,7 @@
 
     - name: 06. Grant API Keys access to their respective buckets
       ansible.builtin.command: >
-        {{ kubectl_cmd }} exec -n garage garage-0 -- ./garage bucket allow {{ item.bucket }} --read --write --owner --key {{ item.key }}-key
+        kubectl exec -n garage garage-0 -- ./garage bucket allow {{ item.bucket }} --read --write --owner --key {{ item.key }}-key
       loop:
         - { bucket: 'loki-logs', key: 'loki' }
         - { bucket: 'tempo-traces', key: 'tempo' }
@@ -62,7 +58,7 @@
         ACCESS_KEY=$(echo "$GARAGE_STDOUT" | grep 'Key ID:' | awk '{print $3}' | tr -d '\r\n')
         SECRET_KEY=$(echo "$GARAGE_STDOUT" | grep 'Secret key:' | awk '{print $3}' | tr -d '\r\n')
         
-        {{ kubectl_cmd }} exec -n vault vault-0 -- sh -c "export VAULT_TOKEN='$VAULT_TOKEN'; vault kv put secret/{{ item.item }} access-key=\"$ACCESS_KEY\" secret-key=\"$SECRET_KEY\""
+        kubectl exec -n vault vault-0 -- sh -c "export VAULT_TOKEN='$VAULT_TOKEN'; vault kv put secret/{{ item.item }} access-key=\"$ACCESS_KEY\" secret-key=\"$SECRET_KEY\""
       environment:
         GARAGE_STDOUT: "{{ item.stdout | default('') }}"
         VAULT_TOKEN: "{{ root_token }}" 
