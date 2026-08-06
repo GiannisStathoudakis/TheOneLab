@@ -29,6 +29,10 @@ spec:
             path: Apps/Grafana
           - app:  garage
             path: Apps/Garage
+          - app: loki
+            path: Apps/Loki
+          - app: victoria-metrics
+            path: Apps/VictoriaMetrics
 
   template:
     metadata:

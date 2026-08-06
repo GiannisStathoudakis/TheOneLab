@@ -1,0 +1,81 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: default
+  source:
+    repoURL: https://grafana-community.github.io/helm-charts
+    chart: loki
+    targetRevision: 18.4.2
+    helm:
+      values: |
+        global:
+          extraEnvFrom:
+            - secretRef:
+                name: loki-s3-credentials
+
+        deploymentMode: Monolithic
+        
+        loki:
+          auth_enabled: false
+          
+          commonConfig:
+            replication_factor: 1
+            
+          schemaConfig:
+            configs:
+              - from: "2026-01-01"
+                store: tsdb
+                object_store: s3
+                schema: v13
+                index:
+                  prefix: loki_index_
+                  period: 24h
+                  
+          storage:
+            type: s3
+            bucketNames:
+              chunks: loki-logs
+              ruler: loki-logs
+              admin: loki-logs
+            s3:
+              endpoint: garage.garage.svc.cluster.local:3900
+              region: garage
+              insecure: true
+              s3ForcePathStyle: true
+        
+        gateway:
+          enabled: false
+
+        singleBinary:
+          replicas: 1
+          persistence:
+            enabled: true
+            size: 5Gi
+            storageClass: longhorn
+
+        read:
+          replicas: 0
+        write:
+          replicas: 0
+        backend:
+          replicas: 0
+
+        lokiCanary:
+          enabled: false
+        test:
+          enabled: false
+          
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: loki
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
