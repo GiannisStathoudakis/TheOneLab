@@ -1,0 +1,59 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: default
+  source:
+    repoURL: https://grafana-community.github.io/helm-charts
+    chart: grafana
+
+    targetRevision: 12.10.3
+    helm:
+      values: |
+        persistence:
+          enabled: true
+          storageClassName: "longhorn"
+          size: 2Gi
+                    
+        envValueFrom:
+          GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
+            secretKeyRef:
+              name: grafana-oidc-secret
+              key: clientID
+          GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
+            secretKeyRef:
+              name: grafana-oidc-secret
+              key: clientSecret
+
+        grafana.ini:
+          server:
+            root_url: https://grafana.kublab.org
+          auth:
+            disable_login_form: true
+          security:
+            disable_initial_admin_creation: true
+          auth.generic_oauth:
+            enabled: true
+            name: Authentik
+            icon: signin
+            scopes: openid profile email groups
+            auth_url: https://authentik.kublab.org/application/o/authorize/
+            token_url: https://authentik.kublab.org/application/o/token/
+            api_url: https://authentik.kublab.org/application/o/userinfo/
+            
+            role_attribute_path: contains(groups[*], 'authentik Admins') && 'Admin' || 'Viewer'
+            role_attribute_strict: true
+            allow_sign_up: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: grafana
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:  
+      - CreateNamespace=true
