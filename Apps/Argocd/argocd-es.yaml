@@ -1,0 +1,25 @@
+apiVersion: external-secrets.io/v1 
+kind: ExternalSecret
+metadata:
+  name: argocd-oidc-es
+  namespace: argocd
+spec:
+  refreshInterval: "1h"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: argocd-oidc-secret
+    template:
+      metadata:
+        labels:
+          app.kubernetes.io/part-of: argocd
+  data:
+  - secretKey: clientSecret
+    remoteRef:
+      key: secret/argocd
+      property: clientSecret
+  - secretKey: clientID
+    remoteRef:
+      key: secret/argocd
+      property: clientId
