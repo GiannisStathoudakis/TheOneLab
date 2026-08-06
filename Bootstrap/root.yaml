@@ -35,6 +35,8 @@ spec:
             path: Apps/VictoriaMetrics
           - app: tempo
             path: Apps/Tempo 
+          - app: node-exporter
+            path: Apps/Node-exporter
 
   template:
     metadata:
