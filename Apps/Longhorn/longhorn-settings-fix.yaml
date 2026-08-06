@@ -1,0 +1,14 @@
+---
+apiVersion: longhorn.io/v1beta2
+kind: Setting
+metadata:
+  name: system-managed-components-node-selector
+  namespace: longhorn-system
+value: ""
+---
+apiVersion: longhorn.io/v1beta2
+kind: Setting
+metadata:
+  name: node-selector
+  namespace: longhorn-system
+value: ""
