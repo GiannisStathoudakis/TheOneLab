@@ -17,8 +17,8 @@ spec:
             path: Apps/Cilium
           - app: envoy
             path: Apps/Envoy
-          - app: argocd
-            path: Apps/Argocd
+          #- app: argocd
+          #  path: Apps/Argocd
           #- app: longhorn
           #  path: Apps/Longhorn
           #- app: authentik
