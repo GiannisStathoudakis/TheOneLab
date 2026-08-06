@@ -2,6 +2,9 @@
 - hosts: master
   become: true
 
+  vars:
+    admin_user: "{{ ansible_user }}"
+
   tasks:
     - name: 01. Install updates for Ubuntu
       tags: always

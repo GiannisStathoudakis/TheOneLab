@@ -1,13 +1,11 @@
 ---
 - hosts: master
-  become: true
   vars_files:
     - files/secrets.yml
-  vars:
-    kubeconfig_path: "/etc/rancher/rke2/rke2.yaml"
 
   tasks:
     - name: 00. Install required Python libraries on Master host
+      become: true
       ansible.builtin.apt:
         name: 
           - python3-kubernetes
@@ -17,13 +15,11 @@
 
     - name: 01. Install Local Path Provisioner
       kubernetes.core.k8s:
-        kubeconfig: "{{ kubeconfig_path }}"
         state: present
         src: https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.36/deploy/local-path-storage.yaml
 
     - name: 02. Make local-path the default StorageClass
       kubernetes.core.k8s:
-        kubeconfig: "{{ kubeconfig_path }}"
         state: present
         definition:
           apiVersion: storage.k8s.io/v1
@@ -35,7 +31,6 @@
     
     - name: 03. Install gateway-api
       kubernetes.core.k8s:
-        kubeconfig: "{{ kubeconfig_path }}"
         state: present
         src: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.0/experimental-install.yaml
 
@@ -46,7 +41,6 @@
 
     - name: 05. Install Cilium CNI via Helm
       kubernetes.core.helm:
-        kubeconfig: "{{ kubeconfig_path }}"
         name: cilium
         chart_ref: cilium/cilium
         release_namespace: kube-system

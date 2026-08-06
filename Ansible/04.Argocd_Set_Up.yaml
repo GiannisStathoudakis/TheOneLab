@@ -1,13 +1,9 @@
 ---
 - hosts: master
-  become: true
-  vars:
-    kubeconfig_path: "/etc/rancher/rke2/rke2.yaml"
 
   tasks:
     - name: 01. Create Argo CD namespace
       kubernetes.core.k8s:
-        kubeconfig: "{{ kubeconfig_path }}"
         name: argocd
         api_version: v1
         kind: Namespace
@@ -20,7 +16,6 @@
 
     - name: 03. Install Argo CD via Helm
       kubernetes.core.helm:
-        kubeconfig: "{{ kubeconfig_path }}"
         name: argocd
         chart_ref: argo/argo-cd
         release_namespace: argocd
@@ -29,7 +24,6 @@
 
     - name: 04. Retrieve Argo CD initial admin password
       kubernetes.core.k8s_info:
-        kubeconfig: "{{ kubeconfig_path }}"
         kind: Secret
         name: argocd-initial-admin-secret
         namespace: argocd
@@ -40,4 +34,4 @@
         msg: "Argo CD Password: {{ argocd_secret.resources[0].data.password | b64decode }}"
     
     - name: 06. Port-forward ArgoCd
-      ansible.builtin.shell: /var/lib/rancher/rke2/bin/kubectl --kubeconfig /etc/rancher/rke2/rke2.yaml port-forward svc/argocd-server -n argocd 8080:443 --address 0.0.0.0
+      ansible.builtin.shell: kubectl port-forward svc/argocd-server -n argocd 8080:443 --address 0.0.0.0
