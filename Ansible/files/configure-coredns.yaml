@@ -1,0 +1,26 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: rke2-coredns
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    nodelocal:
+      enabled: true
+    
+    autoscaler:
+      enabled: false
+
+    zoneFiles:
+      - filename: kublab.org.conf
+        domain: kublab.org
+        contents: |
+          kublab.org:53 {
+            errors
+            cache 30
+            forward . 10.43.238.5
+          }
+    
+    extraConfig:
+      import:
+        parameters: /etc/coredns/kublab.org.conf
