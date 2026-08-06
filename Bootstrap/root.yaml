@@ -19,8 +19,8 @@ spec:
             path: Apps/Envoy
           - app: argocd
             path: Apps/Argocd
-          #- app: longhorn
-          #  path: Apps/Longhorn
+          - app: longhorn
+            path: Apps/Longhorn
           #- app: authentik
           #  path: Apps/Authentik
           #- app:  technitium-dns
