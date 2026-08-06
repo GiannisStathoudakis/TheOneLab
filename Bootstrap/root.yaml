@@ -33,6 +33,8 @@ spec:
             path: Apps/Loki
           - app: victoria-metrics
             path: Apps/VictoriaMetrics
+          - app: tempo
+            path: Apps/Tempo 
 
   template:
     metadata:

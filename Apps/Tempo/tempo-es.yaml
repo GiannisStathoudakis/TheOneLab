@@ -1,0 +1,23 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: tempo-s3-credentials
+  namespace: tempo
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  refreshInterval: "1h"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: tempo-s3-credentials
+  data:
+  - secretKey: AWS_ACCESS_KEY_ID
+    remoteRef:
+      key: secret/tempo
+      property: access-key
+  - secretKey: AWS_SECRET_ACCESS_KEY
+    remoteRef:
+      key: secret/tempo
+      property: secret-key
