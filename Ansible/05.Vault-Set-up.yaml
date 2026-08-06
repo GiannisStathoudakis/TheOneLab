@@ -1,15 +1,12 @@
 ---
 - hosts: master
-  become: true
   vars_files:
     - files/secrets.yml
-  vars:
-    kubeconfig_path: "/etc/rancher/rke2/rke2.yaml"
 
   tasks:
     - name: 01. Execute Vault setup script inside Pod via stdin
       ansible.builtin.shell: |
-        /var/lib/rancher/rke2/bin/kubectl --kubeconfig {{ kubeconfig_path }} exec -i vault-0 -n vault -- sh -s -- "{{ cloudflare_api_token }}" << 'EOF'
+        kubectl exec -i vault-0 -n vault -- sh -s -- "{{ cloudflare_api_token }}" << 'EOF'
         {{ lookup('file', 'files/vault-init.sh') }}
         EOF
       register: vault_setup_output
@@ -20,7 +17,7 @@
 
     - name: 03. Read cluster-keys.json from Pod
       ansible.builtin.shell: |
-        /var/lib/rancher/rke2/bin/kubectl --kubeconfig {{ kubeconfig_path }} exec vault-0 -n vault -- cat /tmp/cluster-keys.json
+        kubectl exec vault-0 -n vault -- cat /tmp/cluster-keys.json
       register: vault_keys_output
       failed_when: false
 
@@ -34,5 +31,5 @@
 
     - name: 05. Clean up sensitive files from Pod
       ansible.builtin.shell: |
-        /var/lib/rancher/rke2/bin/kubectl --kubeconfig {{ kubeconfig_path }} exec vault-0 -n vault -- rm -f /tmp/cluster-keys.json /tmp/eso-policy.hcl
+        kubectl exec vault-0 -n vault -- rm -f /tmp/cluster-keys.json /tmp/eso-policy.hcl
       failed_when: false

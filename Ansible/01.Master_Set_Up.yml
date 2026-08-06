@@ -103,6 +103,12 @@
         state: started
         enabled: true
 
+    - name: 13.5 Symlink kubectl to global path
+      ansible.builtin.file:
+        src: /var/lib/rancher/rke2/bin/kubectl
+        dest: /usr/local/bin/kubectl
+        state: link
+
     - name: 14. Create .kube directory for admin user
       ansible.builtin.file:
         path: "/home/{{ admin_user }}/.kube"
