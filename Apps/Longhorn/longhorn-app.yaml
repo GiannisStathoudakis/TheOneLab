@@ -17,18 +17,16 @@ spec:
           nodeSelector: {}
           
         longhornUI:
-          replicas: 1
+          replicas: 2
           
         persistence:
           defaultClass: true
-          defaultClassReplicaCount: 1
+          defaultClassReplicaCount: 2
           
         defaultSettings:
-          defaultReplicaCount: 1
+          defaultReplicaCount: 2
           taintToleration: "node-role.kubernetes.io/control-plane=true:NoSchedule;node-role.kubernetes.io/master=true:NoSchedule"
-          
-          createDefaultDiskLabeledNodes: true
-          
+                    
         preUpgradeChecker:
           jobEnabled: false
   destination:
