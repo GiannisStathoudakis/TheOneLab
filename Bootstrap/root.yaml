@@ -15,8 +15,8 @@ spec:
             path: Apps/External-Secrets
           - app: cilium
             path: Apps/Cilium
-          #- app: envoy
-          #  path: Apps/Envoy
+          - app: envoy
+            path: Apps/Envoy
           #- app: argocd
           #  path: Apps/Argocd
           #- app: longhorn
