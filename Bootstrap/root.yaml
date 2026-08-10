@@ -41,6 +41,8 @@ spec:
             path: Apps/Alloy
           - app: kyverno
             path: Apps/Kyverno
+          - app: renovate 
+            path: Apps/Renovate
 
   template:
     metadata:
