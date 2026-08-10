@@ -39,6 +39,8 @@ spec:
             path: Apps/Node-exporter
           - app: alloy
             path: Apps/Alloy
+          - app: kyverno
+            path: Apps/Kyverno
 
   template:
     metadata:
