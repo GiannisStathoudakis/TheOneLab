@@ -11,5 +11,4 @@ spec:
     kubernetes:
       envoyService:
         type: LoadBalancer
-        loadBalancer:
-          externalTrafficPolicy: Cluster
+        externalTrafficPolicy: Cluster
