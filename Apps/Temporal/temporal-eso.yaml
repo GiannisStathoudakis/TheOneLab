@@ -1,0 +1,17 @@
+apiVersion: external-secrets.io/v1 
+kind: ExternalSecret
+metadata:
+  name: temporal-db-credentials
+  namespace: temporal
+spec:
+  refreshInterval: "1h"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: temporal-db-secret
+  data:
+  - secretKey: password
+    remoteRef:
+      key: secret/temporal
+      property: temporal_pass
