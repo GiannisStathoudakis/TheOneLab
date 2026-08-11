@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kargo
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: ghcr.io/akuity/kargo-charts
+    chart: kargo
+    targetRevision: 1.11.0
+    helm:
+      values: |
+        api:
+          host: kargo.kublab.org
+          service:
+            type: ClusterIP
+            port: 80
+          tls:
+            enabled: false
+            terminatedUpstream: true
+          
+          oidc:
+            enabled: true
+            issuerURL: "https://authentik.kublab.org/application/o/kargo/"
+            clientID: "bCpMQO9MbinrULuYxqPL3dH2wPaeuoxRkKWoVMNy"
+            
+            additionalScopes:
+              - groups
+
+            admins:
+              claims:
+                groups:
+                  - "authentik Admins"
+        
+        controller:
+          argocd:
+            integrationEnabled: true
+            namespace: argocd
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kargo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

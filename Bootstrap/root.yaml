@@ -49,6 +49,8 @@ spec:
             path: Apps/RedPanda
           - app: temporal 
             path: Apps/Temporal
+          - app: kargo
+            path: Apps/Kargo
 
   template:
     metadata:
