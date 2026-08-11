@@ -15,7 +15,10 @@ spec:
           host: kargo.kublab.org
           service:
             type: ClusterIP
-            port: 80
+            
+          adminAccount:
+            enabled: false
+
           tls:
             enabled: false
             terminatedUpstream: true
