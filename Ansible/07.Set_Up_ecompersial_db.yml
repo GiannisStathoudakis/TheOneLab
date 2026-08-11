@@ -1,0 +1,96 @@
+---
+- hosts: master
+  vars_files:
+    - files/cluster-keys.json
+  
+  vars:
+    microservices:
+      - ms-orders
+      - ms-payment
+      - ms-stock
+
+  tasks: 
+    - name: 01. Enable Database Secrets Engine in Vault
+      ansible.builtin.shell: >
+        kubectl exec -n vault vault-0 -- sh -c "export VAULT_TOKEN='$VAULT_TOKEN'; 
+        vault secrets enable -path=database database || true"
+      environment:
+        VAULT_TOKEN: "{{ root_token }}"
+      changed_when: false
+
+    - name: 02. Fetch MySQL admin password dynamically from Vault
+      ansible.builtin.shell: >
+        kubectl exec -n vault vault-0 -- sh -c "export VAULT_TOKEN='$VAULT_TOKEN'; 
+        vault kv get -field=admin-password secret/mysql"
+      environment:
+        VAULT_TOKEN: "{{ root_token }}"
+      register: mysql_admin_pass
+      changed_when: false
+
+    - name: 03. Fetch Temporal password from Vault KV
+      ansible.builtin.shell: >
+        kubectl exec -n vault vault-0 -- sh -c "export VAULT_TOKEN='$VAULT_TOKEN'; 
+        vault kv get -field=temporal_pass secret/temporal"
+      environment:
+        VAULT_TOKEN: "{{ root_token }}"
+      register: temporal_pass
+      changed_when: false
+
+    - name: 04. Create Temporal Databases and MySQL User
+      ansible.builtin.shell: >
+        kubectl exec -i -n ecommerce mysql-0 -- mysql -u root -p'{{ mysql_admin_pass.stdout | trim }}' -e 
+        "CREATE DATABASE IF NOT EXISTS temporal; 
+         CREATE DATABASE IF NOT EXISTS temporal_visibility; 
+         CREATE USER IF NOT EXISTS 'temporal'@'%' IDENTIFIED BY '{{ temporal_pass.stdout | trim }}'; 
+         ALTER USER 'temporal'@'%' IDENTIFIED BY '{{ temporal_pass.stdout | trim }}'; 
+         GRANT ALL PRIVILEGES ON temporal.* TO 'temporal'@'%'; 
+         GRANT ALL PRIVILEGES ON temporal_visibility.* TO 'temporal'@'%'; 
+         FLUSH PRIVILEGES;"
+      changed_when: true
+
+    - name: 05. Configure MySQL Connection Plugin in Vault
+      ansible.builtin.shell: >
+        kubectl exec -n vault vault-0 -- sh -c "export VAULT_TOKEN='$VAULT_TOKEN'; 
+        vault write database/config/ecommerce-mysql 
+        plugin_name=mysql-database-plugin 
+        allowed_roles='*' 
+        connection_url='{% raw %}{{username}}:{{password}}{% endraw %}@tcp(mysql.ecommerce.svc.cluster.local:3306)/?multiStatements=true' 
+        username='root' 
+        password='{{ mysql_admin_pass.stdout | trim }}'"
+      environment:
+        VAULT_TOKEN: "{{ root_token }}"
+      changed_when: true
+
+    - name: 06. Create Vault roles for microservices
+      ansible.builtin.shell: |
+        cat << 'EOF' | kubectl exec -i -n vault vault-0 -- sh -c "export VAULT_TOKEN='$VAULT_TOKEN'; vault write database/roles/{{ item }}-role - "
+        {
+          "db_name": "ecommerce-mysql",
+          "creation_statements": [
+            "CREATE USER '{% raw %}{{name}}{% endraw %}'@'%' IDENTIFIED WITH caching_sha2_password BY '{% raw %}{{password}}{% endraw %}';",
+            "GRANT ALL PRIVILEGES ON ecommerce.* TO '{% raw %}{{name}}{% endraw %}'@'%';"
+          ],
+          "revocation_statements": [
+            "SELECT 1;"
+          ],
+          "default_ttl": "24h",
+          "max_ttl": "24h"
+        }
+        EOF
+      environment:
+        VAULT_TOKEN: "{{ root_token }}"
+      loop: "{{ microservices }}"
+      changed_when: true
+
+    - name: 07. Grant ESO API permissions for Database Creds and KV
+      ansible.builtin.shell: >
+        kubectl exec -n vault vault-0 -- sh -c "export VAULT_TOKEN='$VAULT_TOKEN'; 
+        echo 'path \"secret/data/*\" { capabilities = [\"read\"] } path \"database/creds/*\" { capabilities = [\"read\"] }' | vault policy write eso-policy -"
+      environment:
+        VAULT_TOKEN: "{{ root_token }}"
+      changed_when: true
+    
+    - name: 08. Initialize Redpanda Kafka Topics
+      ansible.builtin.shell: >
+        kubectl exec -n redpanda redpanda-0 -- rpk topic create orders payments stock --partitions 3 --replicas 1 || true
+      changed_when: false
