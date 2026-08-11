@@ -43,6 +43,10 @@ spec:
             path: Apps/Kyverno
           - app: renovate 
             path: Apps/Renovate
+          - app: mysql 
+            path: Apps/MySQL
+          - app: redpanda 
+            path: Apps/RedPanda
 
   template:
     metadata:

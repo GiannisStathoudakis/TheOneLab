@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: redpanda
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://charts.redpanda.com
+    chart: redpanda
+    targetRevision: 26.1.9
+    helm:
+      values: |
+        statefulset:
+          replicas: 1
+        
+        resources:
+          cpu:
+            cores: 1
+          memory:
+            container:
+              max: 2.5Gi
+              
+        tls:
+          enabled: false
+        auth:
+          sasl:
+            enabled: false
+            
+        storage:
+          persistentVolume:
+            enabled: true
+            storageClass: longhorn
+            size: 10Gi
+            
+        tuning:
+          tune_aio_events: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: redpanda
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
