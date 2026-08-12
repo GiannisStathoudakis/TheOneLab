@@ -17,7 +17,7 @@ spec:
           config:
             repoURL: https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo.git
             checkout:
-              branch: master
+              - branch: master
         - uses: git-clear
         - uses: helm-update-image
           config:
