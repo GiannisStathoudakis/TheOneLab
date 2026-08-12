@@ -26,7 +26,7 @@ spec:
           oidc:
             enabled: true
             issuerURL: "https://authentik.kublab.org/application/o/kargo/"
-            clientID: "bCpMQO9MbinrULuYxqPL3dH2wPaeuoxRkKWoVMNy"
+            clientID: "DlacjyxxPTb0FZkNPFBoUInIGPopIaAMR4fq9kXx"
             
             additionalScopes:
               - groups
