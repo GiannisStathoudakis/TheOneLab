@@ -57,6 +57,13 @@ spec:
             enabled: true
             size: 5Gi
             storageClass: longhorn
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
 
         read:
           replicas: 0
@@ -69,6 +76,26 @@ spec:
           enabled: false
         test:
           enabled: false
+
+        chunksCache:
+          allocatedMemory: 512
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+
+        resultsCache:
+          allocatedMemory: 512
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
           
   destination:
     server: https://kubernetes.default.svc
