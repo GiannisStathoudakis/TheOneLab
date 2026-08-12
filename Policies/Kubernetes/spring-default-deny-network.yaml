@@ -1,0 +1,71 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-dns
+  namespace: spring-apps
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-databases
+  namespace: spring-apps
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  # Allow Redpanda
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: redpanda
+    ports:
+    - protocol: TCP
+      port: 9093
+  # Allow MySQL
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ecommerce
+    ports:
+    - protocol: TCP
+      port: 3306
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-envoy-alloy
+  namespace: spring-apps
+spec:
+  podSelector: {} 
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    # Allow traffic from Envoy Gateway
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: envoy-gateway-system
+    # Allow traffic from Alloy
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: alloy
+    ports:
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 9091
