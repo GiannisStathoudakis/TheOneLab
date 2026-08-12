@@ -11,12 +11,14 @@ spec:
   background: true
   rules:
     - name: require-image-tag
+      skipBackgroundRequests: true
       match:
         any:
         - resources:
             kinds:
               - Pod
       validate:
+        allowExistingViolations: true
         message: "Using :latest is forbidden."
         pattern:
           spec:

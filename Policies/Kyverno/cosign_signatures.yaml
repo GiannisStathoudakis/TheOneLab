@@ -11,6 +11,7 @@ spec:
   webhookTimeoutSeconds: 30
   rules:
     - name: verify-ghcr-signatures
+      skipBackgroundRequests: true
       match:
         any:
         - resources:
@@ -22,6 +23,7 @@ spec:
         verifyDigest: true
         required: true
         mutateDigest: true
+        useCache: true
         attestors:
         - entries:
           - keys:
