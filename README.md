@@ -10,7 +10,7 @@ It acts as a comprehensive e-commerce microservices application featuring multip
 
 ## Current Infrastructure Stack
 
-| Component | Role in the Cluster |
+| Component | Role |
 | :--- | :--- |
 | **Cilium** | CNI, Load Balancer, Hubble Observability, East-West routing (eBPF Kube-Proxy replacement) |
 | **Envoy Gateway** | North-South Traffic Management (Kubernetes Gateway API) |
@@ -29,15 +29,18 @@ It acts as a comprehensive e-commerce microservices application featuring multip
 | **NodeLocal DNSCache** | Caches DNS queries on worker nodes to prevent CoreDNS overload |
 
 ### Data & Messaging Middleware
+| Component | Role |
 | :--- | :--- |
-| **Redpanda:** | High-performance, C++ Kafka-compatible event streaming platform / message broker |
-| **MySQL:** | Relational database storage layer for microservice state and order persistence |
+| **Redpanda** | High-performance, C++ Kafka-compatible event streaming platform / message broker |
+| **MySQL** | Relational database storage layer for microservice state and order persistence |
 
 ### Observability Stack
+
+| Component | Role |
 | :--- | :--- |
-| **Grafana:** | Central dashboard visualization |
-| **Loki:** | Log aggregation and querying |
-| **VictoriaMetrics:** | High-performance time-series metrics storage |
-| **Tempo:** | Distributed tracing backend |
-| **Alloy:** | Telemetry data collector and processing pipeline |
-| **Node Exporter:** | Hardware and OS metric collection |
+| **Grafana** | Central dashboard visualization |
+| **Loki** | Log aggregation and querying |
+| **VictoriaMetrics** | High-performance time-series metrics storage |
+| **Tempo** | Distributed tracing backend |
+| **Alloy** | Telemetry data collector and processing pipeline |
+| **Node Exporter** | Hardware and OS metric collection |
