@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/GiannisStathoudakis/TheOneLab
     targetRevision: master
-    path: policies
+    path: Policies
   destination:
     server: https://kubernetes.default.svc
   syncPolicy:
