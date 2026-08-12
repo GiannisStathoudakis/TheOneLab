@@ -26,6 +26,8 @@ spec:
         defaultSettings:
           defaultReplicaCount: 2
           taintToleration: "node-role.kubernetes.io/control-plane=true:NoSchedule;node-role.kubernetes.io/master=true:NoSchedule"
+          concurrentReplicaRebuildPerNodeLimit: 1
+          concurrentVolumeBackupRestorePerNodeLimit: 1
                     
         preUpgradeChecker:
           jobEnabled: false
