@@ -1,8 +1,8 @@
-apiVersion: external-secrets.io/v1
+apiVersion: external-secrets.io/v1 
 kind: ExternalSecret
 metadata:
   name: kargo-github-creds-eso
-  namespace: kargo
+  namespace: ecommerce
 spec:
   refreshInterval: "1h"
   secretStoreRef:
@@ -17,7 +17,7 @@ spec:
       data:
         repoURL: "https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo"
         username: "GiannisStathoudakis"
-        password: "{{ .kargo_token }}"
+        password: "{{ .kargo_token }}" 
   data:
   - secretKey: kargo_token
     remoteRef:
