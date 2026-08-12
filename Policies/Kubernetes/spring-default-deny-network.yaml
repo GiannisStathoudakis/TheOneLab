@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-egress-dns
+  name: spring-allow-egress-dns
   namespace: spring-apps
 spec:
   podSelector: {}
@@ -21,7 +21,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-egress-databases
+  name: spring-allow-egress-databases
   namespace: spring-apps
 spec:
   podSelector: {}
@@ -48,7 +48,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-ingress-envoy-alloy
+  name: spring-allow-ingress-envoy-alloy
   namespace: spring-apps
 spec:
   podSelector: {} 
