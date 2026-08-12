@@ -17,8 +17,8 @@ spec:
             path: Apps/Cilium
           - app: envoy
             path: Apps/Envoy
-          #- app: argocd
-          #  path: Apps/Argocd
+          - app: argocd
+            path: Apps/Argocd
           - app: longhorn
             path: Apps/Longhorn
           - app: authentik
@@ -29,14 +29,14 @@ spec:
             path: Apps/Grafana
           - app:  garage
             path: Apps/Garage
-          #- app: loki
-          #  path: Apps/Loki
-          #- app: victoria-metrics
-          #  path: Apps/VictoriaMetrics
-          #- app: tempo
-          #  path: Apps/Tempo 
-          #- app: node-exporter
-          #  path: Apps/Node-exporter
+          - app: loki
+            path: Apps/Loki
+          - app: victoria-metrics
+            path: Apps/VictoriaMetrics
+          - app: tempo
+            path: Apps/Tempo 
+          - app: node-exporter
+            path: Apps/Node-exporter
           #- app: alloy
           #  path: Apps/Alloy
           #- app: kyverno
