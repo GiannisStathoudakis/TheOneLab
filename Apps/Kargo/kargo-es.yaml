@@ -1,0 +1,25 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: kargo-github-creds-eso
+  namespace: kargo
+spec:
+  refreshInterval: "1h"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: kargo-github-creds
+    template:
+      metadata:
+        labels:
+          kargo.akuity.io/cred-type: git
+      data:
+        repoURL: "https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo"
+        username: "GiannisStathoudakis"
+        password: "{{ .kargo_token }}"
+  data:
+  - secretKey: kargo_token
+    remoteRef:
+      key: secret/Kargo 
+      property: token
