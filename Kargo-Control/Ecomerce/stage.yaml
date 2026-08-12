@@ -18,10 +18,11 @@ spec:
             repoURL: https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo.git
             checkout:
               - branch: master
-        - uses: git-clear
+                path: ./workspace
+                
         - uses: helm-update-image
           config:
-            path: chart/values.yaml
+            path: ./workspace/chart/values.yaml 
             images:
               - image: ghcr.io/giannisstathoudakis/ms-orders
                 key: microservices.orders.tag
@@ -32,7 +33,12 @@ spec:
               - image: ghcr.io/giannisstathoudakis/ms-stock
                 key: microservices.stock.tag
                 value: Tag
+                
         - uses: git-commit
           config:
+            path: ./workspace
             messageFromSteps: helm-update-image
+            
         - uses: git-push
+          config:
+            path: ./workspace
