@@ -40,6 +40,9 @@ spec:
           argocd:
             integrationEnabled: true
             namespace: argocd
+          reconcilers:
+            warehouses:
+              minReconciliationInterval: "2m"
   
   destination:
     server: https://kubernetes.default.svc
