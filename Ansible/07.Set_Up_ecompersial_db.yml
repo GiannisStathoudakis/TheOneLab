@@ -27,41 +27,20 @@
       register: mysql_admin_pass
       changed_when: false
 
-    - name: 03. Fetch Temporal password from Vault KV
-      ansible.builtin.shell: >
-        kubectl exec -n vault vault-0 -- sh -c "export VAULT_TOKEN='$VAULT_TOKEN'; 
-        vault kv get -field=temporal_pass secret/temporal"
-      environment:
-        VAULT_TOKEN: "{{ root_token }}"
-      register: temporal_pass
-      changed_when: false
-
-    - name: 04. Create Temporal Databases and MySQL User
-      ansible.builtin.shell: >
-        kubectl exec -i -n ecommerce mysql-0 -- mysql -u root -p'{{ mysql_admin_pass.stdout | trim }}' -e 
-        "CREATE DATABASE IF NOT EXISTS temporal; 
-         CREATE DATABASE IF NOT EXISTS temporal_visibility; 
-         CREATE USER IF NOT EXISTS 'temporal'@'%' IDENTIFIED BY '{{ temporal_pass.stdout | trim }}'; 
-         ALTER USER 'temporal'@'%' IDENTIFIED BY '{{ temporal_pass.stdout | trim }}'; 
-         GRANT ALL PRIVILEGES ON temporal.* TO 'temporal'@'%'; 
-         GRANT ALL PRIVILEGES ON temporal_visibility.* TO 'temporal'@'%'; 
-         FLUSH PRIVILEGES;"
-      changed_when: true
-
-    - name: 05. Configure MySQL Connection Plugin in Vault
+    - name: 03. Configure MySQL Connection Plugin in Vault
       ansible.builtin.shell: >
         kubectl exec -n vault vault-0 -- sh -c "export VAULT_TOKEN='$VAULT_TOKEN'; 
         vault write database/config/ecommerce-mysql 
         plugin_name=mysql-database-plugin 
         allowed_roles='*' 
-        connection_url='{% raw %}{{username}}:{{password}}{% endraw %}@tcp(mysql.ecommerce.svc.cluster.local:3306)/?multiStatements=true' 
+        connection_url='{% raw %}{{username}}:{{password}}{% endraw %}@tcp(mysql.mysql.svc.cluster.local:3306)/?multiStatements=true' 
         username='root' 
         password='{{ mysql_admin_pass.stdout | trim }}'"
       environment:
         VAULT_TOKEN: "{{ root_token }}"
       changed_when: true
 
-    - name: 06. Create Vault roles for microservices
+    - name: 04. Create Vault roles for microservices
       ansible.builtin.shell: |
         cat << 'EOF' | kubectl exec -i -n vault vault-0 -- sh -c "export VAULT_TOKEN='$VAULT_TOKEN'; vault write database/roles/{{ item }}-role - "
         {
@@ -82,7 +61,7 @@
       loop: "{{ microservices }}"
       changed_when: true
 
-    - name: 07. Grant ESO API permissions for Database Creds and KV
+    - name: 05. Grant ESO API permissions for Database Creds and KV
       ansible.builtin.shell: >
         kubectl exec -n vault vault-0 -- sh -c "export VAULT_TOKEN='$VAULT_TOKEN'; 
         echo 'path \"secret/data/*\" { capabilities = [\"read\"] } path \"database/creds/*\" { capabilities = [\"read\"] }' | vault policy write eso-policy -"
@@ -90,7 +69,7 @@
         VAULT_TOKEN: "{{ root_token }}"
       changed_when: true
     
-    - name: 08. Initialize Redpanda Kafka Topics
+    - name: 06. Initialize Redpanda Kafka Topics
       ansible.builtin.shell: >
         kubectl exec -n redpanda redpanda-0 -- rpk topic create orders payments stock --partitions 3 --replicas 1 || true
       changed_when: false
