@@ -15,7 +15,7 @@ spec:
       steps:
         - uses: git-clone
           config:
-            repoURL: https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo
+            repoURL: https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo.git
             checkout:
               branch: master
         - uses: git-clear
