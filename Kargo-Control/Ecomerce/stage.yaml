@@ -4,22 +4,21 @@ metadata:
   name: production
   namespace: ecommerce
 spec:
-  subscriptions:
-    warehouse: ecommerce-images
-    
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: ecommerce-images
+      sources:
+        direct: true
   promotionTemplate:
     spec:
       steps:
-        # Clone the Git Repo
         - uses: git-clone
           config:
             repoURL: https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo
             checkout:
               branch: master
-              
         - uses: git-clear
-        
-        # Auto-edit the values.yaml
         - uses: helm-update-image
           config:
             path: chart/values.yaml
@@ -33,8 +32,6 @@ spec:
               - image: ghcr.io/giannisstathoudakis/ms-stock
                 key: microservices.stock.tag
                 value: Tag
-                
-        # Commit and Push
         - uses: git-commit
           config:
             messageFromSteps: helm-update-image
