@@ -31,3 +31,4 @@ spec:
                 name: kyverno-cosign-secret
                 namespace: kyverno
               signatureAlgorithm: sha256
+            signatureAlgorithm: sha256
