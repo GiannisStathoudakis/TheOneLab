@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/GiannisStathoudakis/TheOneLab
-    targetRevision: master
+    targetRevision: HEAD
     path: Policies
     directory:
       recurse: true
