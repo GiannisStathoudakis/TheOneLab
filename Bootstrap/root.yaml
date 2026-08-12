@@ -47,8 +47,8 @@ spec:
             path: Apps/MySQL
           - app: redpanda 
             path: Apps/RedPanda
-          - app: temporal 
-            path: Apps/Temporal
+          #- app: temporal 
+          #  path: Apps/Temporal
           - app: kargo
             path: Apps/Kargo
 

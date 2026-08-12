@@ -161,22 +161,22 @@ spec:
 # -----------------------------
 # Temporal Routing
 # -----------------------------
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: temporal-route
-  namespace: temporal
-spec:
-  parentRefs:
-  - name: lab-gateway
-    namespace: envoy-gateway-system
-    sectionName: https
-  hostnames: 
-  - "temporal.kublab.org"
-  rules:
-  - backendRefs:
-    - name: temporal-web
-      port: 8080
+#apiVersion: gateway.networking.k8s.io/v1
+#kind: HTTPRoute
+#metadata:
+#  name: temporal-route
+#  namespace: temporal
+#spec:
+#  parentRefs:
+#  - name: lab-gateway
+#    namespace: envoy-gateway-system
+#    sectionName: https
+#  hostnames: 
+#  - "temporal.kublab.org"
+#  rules:
+#  - backendRefs:
+#    - name: temporal-web
+#      port: 8080
 --- 
 # -----------------------------
 # Kargo Routing
