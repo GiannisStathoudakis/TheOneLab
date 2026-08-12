@@ -31,7 +31,7 @@ spec:
           persistentVolume:
             enabled: true
             storageClass: longhorn
-            size: 10Gi
+            size: 5Gi
             
         tuning:
           tune_aio_events: false
