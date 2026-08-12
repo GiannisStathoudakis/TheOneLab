@@ -1,19 +1,16 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kyverno-policies
+  name: cluster-policies
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "6"
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/GiannisStathoudakis/TheOneLab.git'
-    path: 'Policies'
+    repoURL: https://github.com/GiannisStathoudakis/TheOneLab
     targetRevision: master
+    path: policies
   destination:
-    server: 'https://kubernetes.default.svc'
-    namespace: kyverno 
+    server: https://kubernetes.default.svc
   syncPolicy:
     automated:
       prune: true
