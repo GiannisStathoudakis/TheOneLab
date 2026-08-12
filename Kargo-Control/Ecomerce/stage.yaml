@@ -20,24 +20,21 @@ spec:
               - branch: master
                 path: ./workspace
                 
-        - uses: helm-update-image
+        - uses: yaml-update
           config:
             path: ./workspace/chart/values.yaml 
-            images:
-              - image: ghcr.io/giannisstathoudakis/ms-orders
-                key: microservices.orders.tag
-                value: Tag
-              - image: ghcr.io/giannisstathoudakis/ms-payment
-                key: microservices.payment.tag
-                value: Tag
-              - image: ghcr.io/giannisstathoudakis/ms-stock
-                key: microservices.stock.tag
-                value: Tag
+            updates:
+              - key: microservices.orders.tag
+                value: ${{ imageFrom('ghcr.io/giannisstathoudakis/ms-orders').Tag }}
+              - key: microservices.payment.tag
+                value: ${{ imageFrom('ghcr.io/giannisstathoudakis/ms-payment').Tag }}
+              - key: microservices.stock.tag
+                value: ${{ imageFrom('ghcr.io/giannisstathoudakis/ms-stock').Tag }}
                 
         - uses: git-commit
           config:
             path: ./workspace
-            messageFromSteps: helm-update-image
+            messageFromSteps: yaml-update
             
         - uses: git-push
           config:
