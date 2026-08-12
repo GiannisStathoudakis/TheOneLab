@@ -34,7 +34,7 @@ spec:
         - uses: git-commit
           config:
             path: ./workspace
-            messageFromSteps: yaml-update
+            message: "chore: update microservices image tags via Kargo"
             
         - uses: git-push
           config:
