@@ -1,0 +1,41 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: production
+  namespace: ecommerce
+spec:
+  subscriptions:
+    warehouse: ecommerce-images
+    
+  promotionTemplate:
+    spec:
+      steps:
+        # Clone the Git Repo
+        - uses: git-clone
+          config:
+            repoURL: https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo
+            checkout:
+              branch: master
+              
+        - uses: git-clear
+        
+        # Auto-edit the values.yaml
+        - uses: helm-update-image
+          config:
+            path: chart/values.yaml
+            images:
+              - image: ghcr.io/giannisstathoudakis/ms-orders
+                key: microservices.orders.tag
+                value: Tag
+              - image: ghcr.io/giannisstathoudakis/ms-payment
+                key: microservices.payment.tag
+                value: Tag
+              - image: ghcr.io/giannisstathoudakis/ms-stock
+                key: microservices.stock.tag
+                value: Tag
+                
+        # Commit and Push
+        - uses: git-commit
+          config:
+            messageFromSteps: helm-update-image
+        - uses: git-push
