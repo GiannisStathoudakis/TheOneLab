@@ -51,8 +51,8 @@ spec:
           #  path: Apps/Temporal
           - app: kargo
             path: Apps/Kargo
-          #- app: ecommerce-kargo
-          #  path: Kargo-Control/Ecomerce
+          - app: ecommerce-kargo
+            path: Kargo-Control/Ecomerce
 
   template:
     metadata:
