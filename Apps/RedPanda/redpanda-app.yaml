@@ -30,7 +30,7 @@ spec:
         storage:
           persistentVolume:
             enabled: true
-            storageClass: longhorn
+            storageClass: openebs-lvm
             size: 5Gi
             
         tuning:
