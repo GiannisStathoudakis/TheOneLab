@@ -27,18 +27,18 @@ spec:
             path: Apps/Authentik
           - app:  technitium-dns
             path: Apps/Technitium-DNS
-          #- app:  grafana
-          #  path: Apps/Grafana
-          #- app:  garage
-          #  path: Apps/Garage
+          - app:  grafana
+            path: Apps/Grafana
+          - app:  garage
+            path: Apps/Garage
           #- app: loki
           #  path: Apps/Loki
-          #- app: victoria-metrics
-          #  path: Apps/VictoriaMetrics
+          - app: victoria-metrics
+            path: Apps/VictoriaMetrics
           #- app: tempo
           #  path: Apps/Tempo 
-          #- app: node-exporter
-          #  path: Apps/Node-exporter
+          - app: node-exporter
+            path: Apps/Node-exporter
           #- app: alloy
           #  path: Apps/Alloy
           #- app: kyverno
