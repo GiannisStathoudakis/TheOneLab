@@ -3,8 +3,6 @@ kind: StatefulSet
 metadata:
   name: mysql
   namespace: mysql
-  annotations:
-    argocd.argoproj.io/sync-wave: "5"
 spec:
   selector:
     matchLabels:
@@ -44,7 +42,7 @@ spec:
       name: mysql-persistent-storage
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: longhorn
+      storageClassName: openebs-lvm
       resources:
         requests:
           storage: 5Gi
