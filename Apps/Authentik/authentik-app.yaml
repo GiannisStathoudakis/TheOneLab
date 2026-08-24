@@ -43,7 +43,7 @@ spec:
           primary:
             persistence:
               enabled: true
-              storageClass: "longhorn"
+              storageClass: "openebs-lvm"
               size: 2Gi
 
   destination:
