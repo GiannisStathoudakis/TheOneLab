@@ -13,8 +13,8 @@ spec:
             path: Apps/Cert-Manager
           - app: eso
             path: Apps/External-Secrets
-          #- app: cilium
-          #  path: Apps/Cilium
+          - app: cilium
+            path: Apps/Cilium
           #- app: envoy
           #  path: Apps/Envoy
           #- app: argocd
