@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: victoria-metrics
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "5"
 spec:
   project: default
   source:
@@ -23,7 +21,7 @@ spec:
           persistentVolume:
             enabled: true
             size: 5Gi
-            storageClassName: "longhorn"
+            storageClassName: "openebs-lvm"
             accessModes:
               - ReadWriteOnce
               
