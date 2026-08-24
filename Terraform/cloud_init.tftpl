@@ -1,0 +1,12 @@
+hostname: ${hostname}
+ssh_pwauth: true
+users:
+  - name: n0id3a
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin
+    shell: /bin/bash
+    lock_passwd: false
+chpasswd:
+  list: |
+    n0id3a:${admin_password}
+  expire: False
