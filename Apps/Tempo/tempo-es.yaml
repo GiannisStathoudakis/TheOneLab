@@ -3,8 +3,6 @@ kind: ExternalSecret
 metadata:
   name: tempo-s3-credentials
   namespace: tempo
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 spec:
   refreshInterval: "1h"
   secretStoreRef:
