@@ -39,16 +39,16 @@ spec:
             path: Apps/Tempo 
           - app: node-exporter
             path: Apps/Node-exporter
-          #- app: alloy
-          #  path: Apps/Alloy
+          - app: alloy
+            path: Apps/Alloy
           #- app: kyverno
           #  path: Apps/Kyverno
           #- app: renovate 
           #  path: Apps/Renovate
           - app: mysql 
             path: Apps/MySQL
-          #- app: redpanda 
-          #  path: Apps/RedPanda
+          - app: redpanda 
+            path: Apps/RedPanda
           #- app: temporal 
           #  path: Apps/Temporal
           #- app: kargo
