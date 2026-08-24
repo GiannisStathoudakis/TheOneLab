@@ -31,12 +31,12 @@ spec:
             path: Apps/Grafana
           - app:  garage
             path: Apps/Garage
-          #- app: loki
-          #  path: Apps/Loki
+          - app: loki
+            path: Apps/Loki
           - app: victoria-metrics
             path: Apps/VictoriaMetrics
-          #- app: tempo
-          #  path: Apps/Tempo 
+          - app: tempo
+            path: Apps/Tempo 
           - app: node-exporter
             path: Apps/Node-exporter
           #- app: alloy
@@ -45,8 +45,8 @@ spec:
           #  path: Apps/Kyverno
           #- app: renovate 
           #  path: Apps/Renovate
-          #- app: mysql 
-          #  path: Apps/MySQL
+          - app: mysql 
+            path: Apps/MySQL
           #- app: redpanda 
           #  path: Apps/RedPanda
           #- app: temporal 
