@@ -32,22 +32,14 @@
         regexp: '^([^#\n]*?\sswap\s+.*)$'
         replace: '# \1'
 
-    - name: 05. Install WireGuard + Longhorn packages
+    - name: 05. Install WireGuard
       ansible.builtin.apt:
         name:
-          - wireguard        # Required for Cilium WireGuard encryption
+          - wireguard        # Required for Cilium
           - wireguard-tools  # Required for Cilium
-          - open-iscsi       # Required for Longhorn
-          - nfs-common       # Required for Longhorn
         state: present
 
-    - name: 06. Ensure iscsid service is active
-      ansible.builtin.systemd:
-        name: iscsid
-        state: started
-        enabled: true
-
-    - name: 07. Load required kernel modules on boot
+    - name: 06. Load required kernel modules on boot
       ansible.builtin.copy:
         dest: /etc/modules-load.d/k8s.conf
         content: |
@@ -56,7 +48,7 @@
           iscsi_tcp
         mode: '0644'
 
-    - name: 08. Load kernel modules immediately
+    - name: 07. Load kernel modules immediately
       ansible.builtin.command: modprobe {{ item }}
       loop:
         - overlay
@@ -64,7 +56,7 @@
         - iscsi_tcp
       changed_when: false
 
-    - name: 09. Set kernel sysctl parameters for Cilium & Kubernetes
+    - name: 08. Set kernel sysctl parameters for Cilium & Kubernetes
       ansible.builtin.sysctl:
         name: "{{ item.name }}"
         value: "{{ item.value }}"
@@ -75,13 +67,13 @@
         - { name: 'net.ipv4.ip_forward', value: '1' }
         - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }
 
-    - name: 10. Create RKE2 directory
+    - name: 09. Create RKE2 directory
       ansible.builtin.file:
         path: /etc/rancher/rke2
         state: directory
         mode: '0755'
 
-    - name: 11. Write RKE2 worker configuration
+    - name: 10. Write RKE2 worker configuration
       ansible.builtin.copy:
         dest: /etc/rancher/rke2/config.yaml
         content: |
@@ -89,19 +81,19 @@
           token: {{ node_token }}
         mode: '0600'
 
-    - name: 12. Download and execute RKE2 agent installer
+    - name: 11. Download and execute RKE2 agent installer
       ansible.builtin.shell: |
         curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" sh -
       args:
         creates: /usr/local/bin/rke2
 
-    - name: 13. Enable and start rke2-agent
+    - name: 12. Enable and start rke2-agent
       ansible.builtin.systemd:
         name: rke2-agent
         state: started
         enabled: true
 
-    - name: 14. Add RKE2 binaries to worker PATH
+    - name: 13. Add RKE2 binaries to worker PATH
       ansible.builtin.lineinfile:
         path: "/home/{{ admin_user }}/.bashrc"
         line: "export PATH=$PATH:/var/lib/rancher/rke2/bin"
@@ -109,7 +101,7 @@
         mode: '0644'
         owner: "{{ admin_user }}"
 
-    - name: 15. Disable Root SSH Login
+    - name: 14. Disable Root SSH Login
       ansible.builtin.lineinfile:
         path: /etc/ssh/sshd_config
         regexp: '^#?PermitRootLogin'
