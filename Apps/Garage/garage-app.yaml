@@ -3,8 +3,6 @@ kind: Application
 metadata:
   name: garage
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "5"
 spec:
   project: default
   source:
@@ -19,11 +17,11 @@ spec:
           replicationFactor: 1
         persistence:
           meta:
-            storageClass: "longhorn"
+            storageClass: "openebs-lvm"
             size: 1Gi
           data:
-            storageClass: "longhorn"
-            size: 15Gi
+            storageClass: "openebs-lvm"
+            size: 10Gi
   destination:
     server: https://kubernetes.default.svc
     namespace: garage
