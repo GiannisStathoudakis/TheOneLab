@@ -25,8 +25,8 @@ spec:
           #  path: Apps/Longhorn
           - app: authentik
             path: Apps/Authentik
-          #- app:  technitium-dns
-          #  path: Apps/Technitium-DNS
+          - app:  technitium-dns
+            path: Apps/Technitium-DNS
           #- app:  grafana
           #  path: Apps/Grafana
           #- app:  garage
