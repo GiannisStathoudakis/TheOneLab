@@ -18,7 +18,7 @@ spec:
           kublab.org:53 {
             errors
             cache 30
-            forward . 10.43.4.193
+            forward . 10.43.200.189
           }
     
     extraConfig:

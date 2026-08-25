@@ -48,6 +48,10 @@
       ansible.builtin.command: vgcreate lvmvg /dev/vdb
       when: vg_check.rc != 0
 
+    - name: 07b. Prepare 70GB disk (/dev/vdb) for OpenEBS
+      ansible.builtin.shell: |
+        vgdisplay lvmvg || vgcreate lvmvg /dev/vdb
+
     - name: 08. Load required kernel modules on boot
       ansible.builtin.copy:
         dest: /etc/modules-load.d/k8s.conf
