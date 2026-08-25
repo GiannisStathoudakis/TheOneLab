@@ -96,28 +96,28 @@ spec:
               // ==========================================
               // Tempo & VictoriaMetrics
               // ==========================================
-              otelcol.receiver.otlp "default" {
-                grpc { endpoint = "0.0.0.0:4317" }
-                http { endpoint = "0.0.0.0:4318" }
-                output {
-                  traces  = [otelcol.exporter.otlp.tempo.input]
-                  metrics = [otelcol.exporter.prometheus.to_victoriametrics.input]
-                }
-              }
+              //otelcol.receiver.otlp "default" {
+              //  grpc { endpoint = "0.0.0.0:4317" }
+              //  http { endpoint = "0.0.0.0:4318" }
+              //  output {
+              //    traces  = [otelcol.exporter.otlp.tempo.input]
+              //    metrics = [otelcol.exporter.prometheus.to_victoriametrics.input]
+              //  }
+              //}
               
-              otelcol.exporter.otlp "tempo" {
-                client {
-                  endpoint = "tempo.tempo.svc.cluster.local:4317"
-                  tls {
-                    insecure             = true
-                    insecure_skip_verify = true
-                  }
-                }
-              }
+              //otelcol.exporter.otlp "tempo" {
+              //  client {
+              //    endpoint = "tempo.tempo.svc.cluster.local:4317"
+              //    tls {
+              //      insecure             = true
+              //      insecure_skip_verify = true
+              //    }
+              //  }
+              //}
 
-              otelcol.exporter.prometheus "to_victoriametrics" {
-                forward_to = [prometheus.remote_write.victoriametrics.receiver]
-              }
+              //otelcol.exporter.prometheus "to_victoriametrics" {
+              //  forward_to = [prometheus.remote_write.victoriametrics.receiver]
+              //}
               
   destination:
     server: https://kubernetes.default.svc
