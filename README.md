@@ -16,6 +16,7 @@ It acts as a comprehensive e-commerce microservices application featuring multip
 | **Envoy Gateway** | North-South Traffic Management (Kubernetes Gateway API) |
 | **ArgoCD** | GitOps Continuous Delivery (CD) engine |
 | **Kargo** | Automated Continuous Promotion & Staging Lifecycle Manager |
+| **Theoros** | Zero-Trust Remote Execution Agent (Secure CLI vault for running `kubectl` without local kubeconfigs) |
 | **Vault** | Centralized Secret & PKI Management (Configured to generate dynamic, ephemeral database credentials) |
 | **External Secrets (ESO)** | Syncs Vault secrets directly into Kubernetes-native secrets |
 | **Cert-Manager & Let's Encrypt** | Automated public TLS/SSL certificate provisioning |
