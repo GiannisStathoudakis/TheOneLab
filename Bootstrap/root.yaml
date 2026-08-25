@@ -55,6 +55,8 @@ spec:
           #  path: Apps/Kargo
           #- app: ecommerce-kargo
           #  path: Kargo-Control/Ecomerce
+          - app: theoros
+            path: Apps/Theoros
 
   template:
     metadata:
