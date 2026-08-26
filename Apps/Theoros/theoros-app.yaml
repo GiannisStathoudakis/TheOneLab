@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: ghcr.io/giannisstathoudakis
     chart: theoros-helm
-    targetRevision: 1.0.1
+    targetRevision: 2.0.0
     
   destination:
     server: https://kubernetes.default.svc
