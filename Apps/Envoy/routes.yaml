@@ -195,5 +195,5 @@ spec:
   - "theoros.kublab.org"
   rules:
   - backendRefs:
-    - name: theoros-svc
+    - name: theoros-theoros-helm
       port: 8080
