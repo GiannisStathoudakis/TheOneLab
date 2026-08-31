@@ -9,38 +9,38 @@ spec:
         elements:
           - app: vault
             path: Apps/Vault
-          - app: cert-manager
-            path: Apps/Cert-Manager
+          #- app: cert-manager
+          #  path: Apps/Cert-Manager
           - app: eso
             path: Apps/External-Secrets
-          - app: cilium
-            path: Apps/Cilium
-          - app: envoy
-            path: Apps/Envoy
-          - app: argocd
-            path: Apps/Argocd
-          - app: openebs
-            path: Apps/Openebs
+          #- app: cilium
+          #  path: Apps/Cilium
+          #- app: envoy
+          #  path: Apps/Envoy
+          #- app: argocd
+          #  path: Apps/Argocd
+          #- app: openebs
+          #  path: Apps/Openebs
           #- app: longhorn
           #  path: Apps/Longhorn
-          - app: authentik
-            path: Apps/Authentik
-          - app:  technitium-dns
-            path: Apps/Technitium-DNS
-          - app:  grafana
-            path: Apps/Grafana
-          - app:  garage
-            path: Apps/Garage
-          - app: loki
-            path: Apps/Loki
-          - app: victoria-metrics
-            path: Apps/VictoriaMetrics
+          #- app: authentik
+          #  path: Apps/Authentik
+          #- app:  technitium-dns
+          #  path: Apps/Technitium-DNS
+          #- app:  grafana
+          #  path: Apps/Grafana
+          #- app:  garage
+          #  path: Apps/Garage
+          #- app: loki
+          #  path: Apps/Loki
+          #- app: victoria-metrics
+          #  path: Apps/VictoriaMetrics
           #- app: tempo
           #  path: Apps/Tempo 
-          - app: node-exporter
-            path: Apps/Node-exporter
-          - app: alloy
-            path: Apps/Alloy
+          #- app: node-exporter
+          #  path: Apps/Node-exporter
+          #- app: alloy
+          #  path: Apps/Alloy
           #- app: kyverno
           #  path: Apps/Kyverno
           #- app: renovate 
@@ -55,8 +55,8 @@ spec:
           #  path: Apps/Kargo
           #- app: ecommerce-kargo
           #  path: Kargo-Control/Ecomerce
-          - app: theoros
-            path: Apps/Theoros
+          #- app: theoros
+          #  path: Apps/Theoros
 
   template:
     metadata:
