@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pyroscope
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: pyroscope
+    targetRevision: 2.3.0
+    helm:
+      values: |
+        alloy:
+          enabled: false
+        agent:
+          enabled: false
+
+        minio:
+          enabled: false
+
+        pyroscope:
+          extraEnvFrom:
+            - secretRef:
+                name: pyroscope-s3-credentials
+
+          persistence:
+            enabled: true
+            size: 2Gi
+            storageClass: openebs-lvm
+
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+
+          config:
+            storage:
+              backend: s3
+              s3:
+                endpoint: garage.garage.svc.cluster.local:3900
+                region: garage
+                bucket_name: pyroscope-profiles
+                insecure: true
+                s3forcepathstyle: true
+                
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: pyroscope
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
