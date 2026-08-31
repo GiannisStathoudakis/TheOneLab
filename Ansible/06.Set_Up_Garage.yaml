@@ -31,6 +31,7 @@
       loop:
         - loki-logs
         - tempo-traces
+        - pyroscope-profiles
       register: bucket_creation
       changed_when: "'created' in bucket_creation.stdout | lower"
       ignore_errors: true
@@ -40,6 +41,7 @@
       loop:
         - loki
         - tempo
+        - pyroscope
       register: api_keys
       changed_when: "'Secret key' in api_keys.stdout"
       ignore_errors: true
@@ -50,6 +52,7 @@
       loop:
         - { bucket: 'loki-logs', key: 'loki' }
         - { bucket: 'tempo-traces', key: 'tempo' }
+        - { bucket: 'pyroscope-profiles', key: 'pyroscope' }
       changed_when: false
       ignore_errors: true
 
