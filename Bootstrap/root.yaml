@@ -41,14 +41,14 @@ spec:
             path: Apps/Pyroscope
           - app: tetragon
             path: Apps/Tetragon
-          #- app: alloy
-          #  path: Apps/Alloy
-          #- app: kyverno
-          #  path: Apps/Kyverno
-          #- app: renovate 
-          #  path: Apps/Renovate
-          #- app: mysql 
-          #  path: Apps/MySQL
+          - app: alloy
+            path: Apps/Alloy
+          - app: kyverno
+            path: Apps/Kyverno
+          - app: renovate 
+            path: Apps/Renovate
+          - app: mysql 
+            path: Apps/MySQL
           #- app: redpanda 
           #  path: Apps/RedPanda
           #- app: temporal 
@@ -57,8 +57,6 @@ spec:
           #  path: Apps/Kargo
           #- app: ecommerce-kargo
           #  path: Kargo-Control/Ecomerce
-          #- app: theoros
-          #  path: Apps/Theoros
 
   template:
     metadata:
