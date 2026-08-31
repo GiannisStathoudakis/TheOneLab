@@ -3,51 +3,68 @@ kind: Application
 metadata:
   name: alloy
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "6"
 spec:
   project: default
   source:
     repoURL: https://grafana.github.io/helm-charts
     chart: alloy
-    targetRevision: 1.10.0 
+    targetRevision: 1.10.0
     helm:
       values: |
         controller:
           type: daemonset
+          hostPID: true # Required for Pyroscope eBPF stack sampling
 
         alloy:
+          securityContext:
+            privileged: true # Required for eBPF and hostPath log tailing
+
           rbac:
             create: true
           extraClusterRoleRules:
             - apiGroups: [""]
-              resources: ["pods", "pods/log"]
+              resources: ["pods", "pods/log", "nodes", "nodes/proxy", "nodes/metrics", "services", "endpoints"]
               verbs: ["get", "list", "watch"]
-              
+
+          # Mount Tetragon host log directory into Alloy
+          extraVolumes:
+            - name: tetragon-logs
+              hostPath:
+                path: /var/run/cilium/tetragon
+          extraVolumeMounts:
+            - name: tetragon-logs
+              mountPath: /var/log/tetragon
+              readOnly: true
+
           configMap:
             content: |-
               // ==========================================
-              // VictoriaMetrics
+              // 1. VictoriaMetrics (cAdvisor Pod Resource Metrics)
               // ==========================================
-              discovery.kubernetes "endpoints" {
-                role = "endpoints"
+              discovery.kubernetes "nodes" {
+                role = "node"
               }
-              
-              discovery.relabel "node_exporter" {
-                targets = discovery.kubernetes.endpoints.targets
+
+              discovery.relabel "cadvisor" {
+                targets = discovery.kubernetes.nodes.targets
                 rule {
-                  source_labels = ["__meta_kubernetes_service_name"]
-                  regex         = "node-exporter"
+                  source_labels = ["__meta_kubernetes_node_name"]
+                  regex         = coalesce(env("HOSTNAME"), constants.hostname)
                   action        = "keep"
                 }
               }
-              
-              prometheus.scrape "node_exporter" {
-                targets         = discovery.relabel.node_exporter.output
-                scrape_interval = "15s"
-                forward_to      = [prometheus.remote_write.victoriametrics.receiver]
+
+              prometheus.scrape "cadvisor" {
+                targets             = discovery.relabel.cadvisor.output
+                scheme              = "https"
+                metrics_path        = "/metrics/cadvisor"
+                bearer_token_file   = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+                tls_config {
+                  insecure_skip_verify = true
+                }
+                forward_to = [prometheus.remote_write.victoriametrics.receiver]
               }
-              
+
               prometheus.remote_write "victoriametrics" {
                 endpoint {
                   url = "http://victoria-metrics-server.victoria.svc.cluster.local:8428/api/v1/write"
@@ -55,7 +72,7 @@ spec:
               }
 
               // ==========================================
-              // Loki
+              // 2. Loki (Pod Stdout/Stderr Application Logs)
               // ==========================================
               discovery.kubernetes "pods" {
                 role = "pod"
@@ -64,10 +81,10 @@ spec:
                   field = "spec.nodeName=" + coalesce(env("HOSTNAME"), constants.hostname)
                 }
               }
-              
+
               discovery.relabel "pod_logs" {
-                targets = discovery.kubernetes.pods.targets                
-                
+                targets = discovery.kubernetes.pods.targets
+
                 rule {
                   source_labels = ["__meta_kubernetes_namespace"]
                   target_label  = "namespace"
@@ -80,13 +97,54 @@ spec:
                   source_labels = ["__meta_kubernetes_pod_container_name"]
                   target_label  = "container"
                 }
+                rule {
+                  source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_container_name"]
+                  separator     = "/"
+                  target_label  = "service_name"
+                }
               }
-              
+
               loki.source.kubernetes "pod_logs" {
                 targets    = discovery.relabel.pod_logs.output
                 forward_to = [loki.write.loki.receiver]
               }
-              
+
+              // ==========================================
+              // 3. Loki (Tetragon eBPF Security Logs)
+              // ==========================================
+              local.file_match "tetragon_logs" {
+                path_targets = [{"__path__" = "/var/log/tetragon/tetragon.log"}]
+              }
+
+              loki.source.file "tetragon" {
+                targets    = local.file_match.tetragon_logs.targets
+                forward_to = [loki.process.tetragon_parse.receiver]
+              }
+
+              loki.process "tetragon_parse" {
+                forward_to = [loki.write.loki.receiver]
+
+                stage.json {
+                  expressions = {
+                    pod       = "process.pod.name",
+                    namespace = "process.pod.namespace",
+                    event     = "process.event_type",
+                    binary    = "process.binary",
+                  }
+                }
+
+                // Promote JSON fields to Loki index labels for instant filtering & correlation
+                stage.labels {
+                  values = {
+                    pod       = "pod",
+                    namespace = "namespace",
+                    event     = "event",
+                    binary    = "binary",
+                    log_type  = "tetragon_security",
+                  }
+                }
+              }
+
               loki.write "loki" {
                 endpoint {
                   url = "http://loki.loki.svc.cluster.local:3100/loki/api/v1/push"
@@ -94,31 +152,51 @@ spec:
               }
 
               // ==========================================
-              // Tempo & VictoriaMetrics
+              // 4. Pyroscope (eBPF Continuous Profiling)
               // ==========================================
-              //otelcol.receiver.otlp "default" {
-              //  grpc { endpoint = "0.0.0.0:4317" }
-              //  http { endpoint = "0.0.0.0:4318" }
-              //  output {
-              //    traces  = [otelcol.exporter.otlp.tempo.input]
-              //    metrics = [otelcol.exporter.prometheus.to_victoriametrics.input]
-              //  }
-              //}
-              
-              //otelcol.exporter.otlp "tempo" {
-              //  client {
-              //    endpoint = "tempo.tempo.svc.cluster.local:4317"
-              //    tls {
-              //      insecure             = true
-              //      insecure_skip_verify = true
-              //    }
-              //  }
-              //}
+              pyroscope.ebpf "default" {
+                targets    = discovery.relabel.pod_logs.output
+                forward_to = [pyroscope.write.pyroscope.receiver]
+              }
 
-              //otelcol.exporter.prometheus "to_victoriametrics" {
-              //  forward_to = [prometheus.remote_write.victoriametrics.receiver]
-              //}
-              
+              pyroscope.write "pyroscope" {
+                endpoint {
+                  url = "http://pyroscope.pyroscope.svc.cluster.local:4040"
+                }
+              }
+
+              // ==========================================
+              // 5. Tempo & OTLP Pipeline (Traces & Beyla Metrics)
+              // ==========================================
+              otelcol.receiver.otlp "default" {
+                grpc { endpoint = "0.0.0.0:4317" }
+                http { endpoint = "0.0.0.0:4318" }
+                output {
+                  traces  = [otelcol.processor.batch.default.input]
+                  metrics = [otelcol.processor.batch.default.input]
+                }
+              }
+
+              otelcol.processor.batch "default" {
+                output {
+                  traces  = [otelcol.exporter.otlp.tempo.input]
+                  metrics = [otelcol.exporter.prometheus.to_victoriametrics.input]
+                }
+              }
+
+              otelcol.exporter.otlp "tempo" {
+                client {
+                  endpoint = "tempo.tempo.svc.cluster.local:4317"
+                  tls {
+                    insecure = true
+                  }
+                }
+              }
+
+              otelcol.exporter.prometheus "to_victoriametrics" {
+                forward_to = [prometheus.remote_write.victoriametrics.receiver]
+              }
+
   destination:
     server: https://kubernetes.default.svc
     namespace: grafana
