@@ -26,8 +26,7 @@ spec:
           persistence:
             enabled: true
             size: 2Gi
-            storageClassName: "openebs-lvm"
-            annotations: {}
+            storageClassName: openebs-lvm
 
           resources:
             requests:
@@ -45,7 +44,7 @@ spec:
                 region: garage
                 bucket_name: pyroscope-profiles
                 insecure: true
-                s3forcepathstyle: true
+                force_path_style: true
               
   destination:
     server: https://kubernetes.default.svc
