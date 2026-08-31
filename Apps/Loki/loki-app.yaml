@@ -44,7 +44,7 @@ spec:
               endpoint: garage.garage.svc.cluster.local:3900
               region: garage
               insecure: true
-              s3ForcePathStyle: true
+              s3forcepathstyle: true
         
         gateway:
           enabled: false
