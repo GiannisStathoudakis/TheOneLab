@@ -40,6 +40,15 @@ spec:
             enabled: true
           ui:
             enabled: true
+          metrics:
+            enabled:
+              - dns
+              - drop
+              - tcp
+              - flow
+              - http
+            serviceMonitor:
+              enabled: true
             
         localRedirectPolicies:
           enabled: true
