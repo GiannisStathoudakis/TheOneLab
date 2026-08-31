@@ -122,6 +122,10 @@ resource "libvirt_domain" "k8s_master" {
   memory = "16384" # 16 GB
   vcpu   = 5       # 5 processors
 
+  cpu {
+      mode = "host-passthrough"
+  }
+
   cloudinit = libvirt_cloudinit_disk.commoninit_master.id
 
   network_interface {
@@ -152,6 +156,10 @@ resource "libvirt_domain" "k8s_worker" {
   name   = "k8s-worker"
   memory = "16384" # 16 GB
   vcpu   = 5       # 5 processors
+
+  cpu {
+      mode = "host-passthrough"
+  }
 
   cloudinit = libvirt_cloudinit_disk.commoninit_worker.id
 
