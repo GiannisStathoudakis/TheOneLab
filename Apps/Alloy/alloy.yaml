@@ -208,6 +208,59 @@ spec:
                 forward_to = [prometheus.remote_write.victoriametrics.receiver]
               }
 
+              // ==========================================
+              // 6. Prometheus Service Discovery (Endpoints)
+              // ==========================================
+              discovery.kubernetes "endpoints" {
+                role = "endpoints"
+              }
+
+              discovery.relabel "annotated_endpoints" {
+                targets = discovery.kubernetes.endpoints.targets
+
+                // Only keep endpoints whose parent Service has prometheus.io/scrape: "true"
+                rule {
+                  source_labels = ["__meta_kubernetes_service_annotation_prometheus_io_scrape"]
+                  regex         = "true"
+                  action        = "keep"
+                }
+                
+                // IMPORTANT: Only scrape the endpoint if it is on the same node as this Alloy pod!
+                rule {
+                  source_labels = ["__meta_kubernetes_endpoint_node_name"]
+                  regex         = coalesce(env("HOSTNAME"), constants.hostname)
+                  action        = "keep"
+                }
+
+                // Map the prometheus.io/port annotation to the target address
+                rule {
+                  source_labels = ["__address__", "__meta_kubernetes_service_annotation_prometheus_io_port"]
+                  action        = "replace"
+                  regex         = "([^:]+)(?::\\d+)?;(\\d+)"
+                  replacement   = "$1:$2"
+                  target_label  = "__address__"
+                }
+
+                // Set the "job" label to the Service name (e.g., "node-exporter") 
+                rule {
+                  source_labels = ["__meta_kubernetes_service_name"]
+                  action        = "replace"
+                  target_label  = "job"
+                }
+
+                // Attach the namespace label
+                rule {
+                  source_labels = ["__meta_kubernetes_namespace"]
+                  action        = "replace"
+                  target_label  = "namespace"
+                }
+              }
+
+              prometheus.scrape "annotated_endpoints" {
+                targets    = discovery.relabel.annotated_endpoints.output
+                forward_to = [prometheus.remote_write.victoriametrics.receiver]
+              }
+
   destination:
     server: https://kubernetes.default.svc
     namespace: grafana
