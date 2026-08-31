@@ -9,14 +9,14 @@ spec:
         elements:
           - app: vault
             path: Apps/Vault
-          #- app: cert-manager
-          #  path: Apps/Cert-Manager
+          - app: cert-manager
+            path: Apps/Cert-Manager
           - app: eso
             path: Apps/External-Secrets
-          #- app: cilium
-          #  path: Apps/Cilium
-          #- app: envoy
-          #  path: Apps/Envoy
+          - app: cilium
+            path: Apps/Cilium
+          - app: envoy
+            path: Apps/Envoy
           #- app: argocd
           #  path: Apps/Argocd
           #- app: openebs
