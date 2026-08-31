@@ -17,10 +17,10 @@ spec:
             path: Apps/Cilium
           - app: envoy
             path: Apps/Envoy
-          #- app: argocd
-          #  path: Apps/Argocd
-          #- app: openebs
-          #  path: Apps/Openebs
+          - app: argocd
+            path: Apps/Argocd
+          - app: openebs
+            path: Apps/Openebs
           #- app: longhorn
           #  path: Apps/Longhorn
           #- app: authentik
