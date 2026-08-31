@@ -83,7 +83,7 @@ spec:
               }
 
               // ==========================================
-              // 2. Loki (Pod Stdout/Stderr Application Logs)
+              // 2. Loki (Pod Stdout/Stderr Application Logs) - FIXED
               // ==========================================
               discovery.kubernetes "pods" {
                 role = "pod"
@@ -109,8 +109,7 @@ spec:
                   target_label  = "container"
                 }
                 rule {
-                  source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_container_name"]
-                  separator     = "/"
+                  source_labels = ["__meta_kubernetes_pod_container_name"]
                   target_label  = "service_name"
                 }
               }
@@ -144,7 +143,6 @@ spec:
                   }
                 }
 
-                // Promote JSON fields to Loki index labels for instant filtering & correlation
                 stage.labels {
                   values = {
                     pod       = "pod",
@@ -218,21 +216,18 @@ spec:
               discovery.relabel "annotated_endpoints" {
                 targets = discovery.kubernetes.endpoints.targets
 
-                // Only keep endpoints whose parent Service has prometheus.io/scrape: "true"
                 rule {
                   source_labels = ["__meta_kubernetes_service_annotation_prometheus_io_scrape"]
                   regex         = "true"
                   action        = "keep"
                 }
                 
-                // IMPORTANT: Only scrape the endpoint if it is on the same node as this Alloy pod!
                 rule {
                   source_labels = ["__meta_kubernetes_endpoint_node_name"]
                   regex         = coalesce(env("HOSTNAME"), constants.hostname)
                   action        = "keep"
                 }
 
-                // Map the prometheus.io/port annotation to the target address
                 rule {
                   source_labels = ["__address__", "__meta_kubernetes_service_annotation_prometheus_io_port"]
                   action        = "replace"
@@ -241,14 +236,12 @@ spec:
                   target_label  = "__address__"
                 }
 
-                // Set the "job" label to the Service name (e.g., "node-exporter") 
                 rule {
                   source_labels = ["__meta_kubernetes_service_name"]
                   action        = "replace"
                   target_label  = "job"
                 }
 
-                // Attach the namespace label
                 rule {
                   source_labels = ["__meta_kubernetes_namespace"]
                   action        = "replace"
