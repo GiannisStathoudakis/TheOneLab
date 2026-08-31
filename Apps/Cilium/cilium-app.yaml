@@ -47,8 +47,6 @@ spec:
               - tcp
               - flow
               - http
-            serviceMonitor:
-              enabled: true
             
         localRedirectPolicies:
           enabled: true
