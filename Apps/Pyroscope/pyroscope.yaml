@@ -8,26 +8,26 @@ spec:
   source:
     repoURL: https://grafana.github.io/helm-charts
     chart: pyroscope
-    targetRevision: 2.3.0
+    targetRevision: 2.2.1
     helm:
       values: |
+        minio:
+          enabled: false
         alloy:
           enabled: false
         agent:
-          enabled: false
-
-        minio:
           enabled: false
 
         pyroscope:
           extraEnvFrom:
             - secretRef:
                 name: pyroscope-s3-credentials
-
+          
           persistence:
             enabled: true
             size: 2Gi
-            storageClass: openebs-lvm
+            storageClassName: "openebs-lvm"
+            annotations: {}
 
           resources:
             requests:
@@ -36,8 +36,8 @@ spec:
             limits:
               cpu: 1000m
               memory: 2Gi
-
-          config:
+              
+          config: |
             storage:
               backend: s3
               s3:
@@ -46,7 +46,7 @@ spec:
                 bucket_name: pyroscope-profiles
                 insecure: true
                 s3forcepathstyle: true
-                
+              
   destination:
     server: https://kubernetes.default.svc
     namespace: pyroscope
