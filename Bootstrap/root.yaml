@@ -49,14 +49,16 @@ spec:
             path: Apps/Renovate
           - app: mysql 
             path: Apps/MySQL
-          #- app: redpanda 
-          #  path: Apps/RedPanda
+          - app: redpanda 
+            path: Apps/RedPanda
           #- app: temporal 
           #  path: Apps/Temporal
-          #- app: kargo
-          #  path: Apps/Kargo
+          - app: kargo
+            path: Apps/Kargo
           #- app: ecommerce-kargo
           #  path: Kargo-Control/Ecomerce
+          - app: obi 
+            path: Apps/Opentelemetry-Ebpf-Instrumentation
 
   template:
     metadata:
