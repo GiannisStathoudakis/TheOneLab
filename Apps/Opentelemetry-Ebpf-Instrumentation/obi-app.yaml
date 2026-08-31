@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: opentelemetry-ebpf
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+    chart: opentelemetry-ebpf-instrumentation
+    targetRevision: 0.13.0
+    helm:
+      values: |
+        privileged: true
+        
+        rbac:
+          create: true
+          
+        config:
+          create: true
+          data:
+            discovery:
+              services:
+                - k8s_namespace: "."
+                
+            attributes:
+              kubernetes:
+                enable: true
+                
+            otel_traces_export:
+              endpoint: "http://alloy.grafana.svc.cluster.local:4317"
+              
+            otel_metrics_export:
+              endpoint: "http://alloy.grafana.svc.cluster.local:4317"
+              
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: opentelemetry-ebpf
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
