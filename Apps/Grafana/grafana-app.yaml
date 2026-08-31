@@ -12,6 +12,9 @@ spec:
     targetRevision: 12.10.3
     helm:
       values: |
+        deploymentStrategy:
+          type: Recreate
+
         persistence:
           enabled: true
           storageClassName: "openebs-lvm"
