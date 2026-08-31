@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tetragon
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://helm.cilium.io/
+    chart: tetragon
+    targetRevision: 1.7.1
+    helm:
+      values: |
+        hostNetwork: true
+        
+        exportDirectory: "/var/run/cilium/tetragon"
+        
+        tetragon:
+          exportFilename: "tetragon.log"
+          
+          exportFilePerm: "644"
+          
+          enableK8sAPI: true
+          
+          exportAllowList: |-
+            {"event_set":["PROCESS_EXEC", "PROCESS_EXIT", "PROCESS_KPROBE", "PROCESS_UPROBE", "PROCESS_LSM"]}
+          
+          exportDenyList: |-
+            {"health_check":true}
+            {"namespace":["", "cilium", "kube-system"]}
+
+          prometheus:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+
+        export:
+          mode: ""
+          
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
