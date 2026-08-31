@@ -24,15 +24,15 @@ provider "libvirt" {
 ###############################################
 #Networking
 ###############################################
-resource "libvirt_network" "k8s_net" {
-  name      = "k8s_network"
-  mode      = "nat" 
-  domain    = "k8s.local"
-  addresses = ["10.17.3.0/24"]
-  dhcp {
-    enabled = true
-  }
-}
+#resource "libvirt_network" "k8s_net" {
+#  name      = "k8s_network"
+#  mode      = "nat" 
+#  domain    = "k8s.local"
+#  addresses = ["10.17.3.0/24"]
+#  dhcp {
+#    enabled = true
+#  }
+#}
 
 ###############################################
 #Storage Pools
@@ -99,6 +99,7 @@ resource "libvirt_cloudinit_disk" "commoninit_master" {
   user_data = templatefile("${path.module}/cloud_init.tftpl", {
     admin_password = var.vm_password
     hostname       = "master"
+    pub_key        = file(pathexpand("~/.ssh/ansible.pub"))
   })
 }
 
@@ -108,6 +109,7 @@ resource "libvirt_cloudinit_disk" "commoninit_worker" {
   user_data = templatefile("${path.module}/cloud_init.tftpl", {
     admin_password = var.vm_password
     hostname       = "worker"
+    pub_key        = file(pathexpand("~/.ssh/ansible.pub"))
   })
 }
 
@@ -123,7 +125,7 @@ resource "libvirt_domain" "k8s_master" {
   cloudinit = libvirt_cloudinit_disk.commoninit_master.id
 
   network_interface {
-    network_id     = libvirt_network.k8s_net.id
+    network_name     = "k8s_network"
     addresses      = ["10.17.3.10"]
     wait_for_lease = true
   }
@@ -154,7 +156,7 @@ resource "libvirt_domain" "k8s_worker" {
   cloudinit = libvirt_cloudinit_disk.commoninit_worker.id
 
   network_interface {
-    network_id     = libvirt_network.k8s_net.id
+    network_name     = "k8s_network"
     addresses      = ["10.17.3.20"]
     wait_for_lease = true
   }

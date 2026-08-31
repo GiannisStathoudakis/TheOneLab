@@ -1,4 +1,6 @@
+#cloud-config
 hostname: ${hostname}
+manage_etc_hosts: true
 ssh_pwauth: true
 users:
   - name: n0id3a
@@ -6,6 +8,8 @@ users:
     groups: users, admin
     shell: /bin/bash
     lock_passwd: false
+    ssh_authorized_keys:
+      - ${pub_key}
 chpasswd:
   list: |
     n0id3a:${admin_password}
