@@ -1,6 +1,6 @@
 > 🚧 **Status:** Under Construction
 
-*Originally evolving from a series of older, local homelab iterations, this project was ultimately dubbed **TheOneLab**—a playful reference to "The One Ring" (One Lab to rule them all!).*
+*Originally evolving from a series of older, local homelab iterations, this project was ultimately dubbed **TheOneLab**—reference to "The One Ring" (One Lab to rule them all!).*
 
 The lab utilizes a custom fork ([springboot-kafka-streams-microservices-demo](https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo)) of [ZaTribune's Spring Boot Kafka Streams Demo](https://github.com/ZaTribune/springboot-kafka-streams-microservices-demo), which has been heavily modified and adapted to be natively compatible with this GitOps infrastructure project. 
 
@@ -16,7 +16,6 @@ It acts as a comprehensive e-commerce microservices application featuring multip
 | **Envoy Gateway** | North-South Traffic Management (Kubernetes Gateway API) |
 | **ArgoCD** | GitOps Continuous Delivery (CD) engine |
 | **Kargo** | Automated Continuous Promotion & Staging Lifecycle Manager |
-| **Theoros** | Zero-Trust Remote Execution Agent (Secure CLI vault for running `kubectl` without local kubeconfigs) |
 | **Vault** | Centralized Secret & PKI Management (Configured to generate dynamic, ephemeral database credentials) |
 | **External Secrets (ESO)** | Syncs Vault secrets directly into Kubernetes-native secrets |
 | **Cert-Manager & Let's Encrypt** | Automated public TLS/SSL certificate provisioning |
@@ -26,7 +25,6 @@ It acts as a comprehensive e-commerce microservices application featuring multip
 | **Renovate** | Automated dependency and Helm chart version updates |
 | **Longhorn** | Distributed Block Storage (CSI) |
 | **Garage** | Lightweight, S3-compatible object storage |
-| **Technitium DNS** | Custom Local DNS (Avoids manual CoreDNS edits) |
 | **NodeLocal DNSCache** | Caches DNS queries on worker nodes to prevent CoreDNS overload |
 
 ### Data & Messaging Middleware
