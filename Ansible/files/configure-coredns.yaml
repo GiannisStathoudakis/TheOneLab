@@ -7,9 +7,8 @@ spec:
   valuesContent: |-
     nodelocal:
       enabled: true
-    
-    autoscaler:
-      enabled: false
+      extraClusterDomains:
+        - kublab.org
 
     zoneFiles:
       - filename: kublab.org.conf
@@ -18,9 +17,9 @@ spec:
           kublab.org:53 {
             errors
             cache 30
-            forward . 10.43.200.189
+            template IN A kublab.org {
+              match ".*\\.kublab\.org$"
+              answer "{{ .Name }} 60 IN A 10.17.3.100"
+            }
+            forward . 1.1.1.1 8.8.8.8
           }
-    
-    extraConfig:
-      import:
-        parameters: /etc/coredns/kublab.org.conf
