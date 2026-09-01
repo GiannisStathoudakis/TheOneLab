@@ -59,6 +59,8 @@ spec:
           #  path: Kargo-Control/Ecomerce
           - app: obi 
             path: Apps/Opentelemetry-Ebpf-Instrumentation
+          - app: rancher
+            path: Apps/Rancher
 
   template:
     metadata:
