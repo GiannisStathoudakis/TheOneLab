@@ -177,3 +177,23 @@ spec:
   - backendRefs:
     - name: kargo-api
       port: 80
+---
+# -----------------------------
+# Rancher Routing
+# -----------------------------
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: rancher-route
+  namespace: cattle-system
+spec:
+  parentRefs:
+  - name: lab-gateway
+    namespace: envoy-gateway-system
+    sectionName: https
+  hostnames: 
+  - "rancher.kublab.org"
+  rules:
+  - backendRefs:
+    - name: rancher
+      port: 80
