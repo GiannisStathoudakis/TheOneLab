@@ -10,22 +10,31 @@ It acts as a comprehensive e-commerce microservices application featuring multip
 
 ## Current Infrastructure Stack
 
+### Core Networking & Storage
+
 | Component | Role |
 | :--- | :--- |
 | **Cilium** | CNI, Load Balancer, Hubble Observability, East-West routing (eBPF Kube-Proxy replacement) |
 | **Envoy Gateway** | North-South Traffic Management (Kubernetes Gateway API) |
+| **OpenEBS (LVM)** | High-performance local persistent block storage (LVM LocalPV CSI) |
+| **Garage** | Lightweight, distributed S3-compatible object storage (Loki & Tempo & Pyroscope backends) |
+| **NodeLocal DNSCache** | Caches DNS queries locally on worker nodes to eliminate CoreDNS latency |
+
+### GitOps, Management & Security
+
+| Component | Role |
+| :--- | :--- |
 | **ArgoCD** | GitOps Continuous Delivery (CD) engine |
-| **Kargo** | Automated Continuous Promotion & Staging Lifecycle Manager |
-| **Vault** | Centralized Secret & PKI Management (Configured to generate dynamic, ephemeral database credentials) |
+| **Kargo** | Multi-stage Continuous Promotion & Lifecycle Orchestrator |
+| **Rancher** | Centralized Kubernetes management and cluster dashboard |
+| **Vault** | Centralized Secret & PKI Management (Dynamic, ephemeral database credentials) |
 | **External Secrets (ESO)** | Syncs Vault secrets directly into Kubernetes-native secrets |
 | **Cert-Manager & Let's Encrypt** | Automated public TLS/SSL certificate provisioning |
 | **Authentik** | Centralized Identity Provider (OIDC / SSO) |
-| **Kyverno** | Policy Engine & Supply Chain Security (Cosign signature validation, tag policies) |
-| **Network Policies & PSA** | Zero-Trust ingress/egress firewalls and Pod Security Admission enforcement |
+| **Kyverno** | Kubernetes Policy Engine and Admission Controller |
+| **Tetragon** | eBPF-based security observability and runtime enforcement |
 | **Renovate** | Automated dependency and Helm chart version updates |
-| **Longhorn** | Distributed Block Storage (CSI) |
-| **Garage** | Lightweight, S3-compatible object storage |
-| **NodeLocal DNSCache** | Caches DNS queries on worker nodes to prevent CoreDNS overload |
+| **Network Policies & PSA** | Zero-Trust ingress/egress firewalls and Pod Security Admission enforcement |
 
 ### Data & Messaging Middleware
 
@@ -38,21 +47,24 @@ It acts as a comprehensive e-commerce microservices application featuring multip
 
 | Component | Role |
 | :--- | :--- |
-| **Grafana** | Central dashboard visualization |
+| **Grafana** | Unified dashboard visualization and APM UI |
+| **Grafana Alloy** | Primary telemetry pipeline (logs, metrics, trace ingestion) |
+| **VictoriaMetrics** | High-performance time-series metrics database (Prometheus-compatible) |
 | **Loki** | Log aggregation and querying |
-| **VictoriaMetrics** | High-performance time-series metrics storage |
-| **Tempo** | Distributed tracing backend |
-| **Alloy** | Telemetry data collector and processing pipeline |
-| **Node Exporter** | Hardware and OS metric collection |
+| **Tempo** | Distributed tracing backend with active Metrics-Generator |
+| **OpenTelemetry eBPF (OBI)** | Kernel-level zero-code auto-instrumentation for HTTP/gRPC RED metrics and traces |
+| **Pyroscope** | Continuous application profiling backend |
+| **Node Exporter** | Host-level hardware and OS metric collector |
+| **Hubble** | Network and service communication flow observability (via Cilium) |
 
 ---
 
-## CI/CD & Supply Chain Security
+## CI/CD & DevSecOps Pipeline
 
-To ensure secure, automated, and reproducible delivery, the microservices utilize a strict **DevSecOps** pipeline powered by **GitHub Actions** and **Helm**:
+To ensure secure, automated, and reproducible delivery, the microservices utilize a streamlined **DevSecOps** pipeline powered by **GitHub Actions** and **Helm**:
 
-*   **Pre-Build Security Scans:** Source code is actively scanned for hardcoded secrets using **GitLeaks** and statically analyzed for vulnerabilities (SAST) using **Semgrep**.
-*   **Build & Containerize:** Java applications are built via Maven and packaged into minimal Docker images using Docker Buildx.
-*   **Post-Build Vulnerability Scanning:** Before distribution, **Trivy** scans the built container images for OS and library-level CVEs.
-*   **Image Signing & Provenance:** Built images are cryptographically signed using **Cosign** (with a private key matching the Kyverno admission policies in the cluster) and pushed to the GitHub Container Registry (GHCR) alongside their Software Bill of Materials (SBOMs).
-*   **Helm Chart Delivery:** The application workloads are packaged into custom **Helm Charts**, allowing standardized, reproducible GitOps deployments that seamlessly integrate with ArgoCD and Kargo.
+* **Pre-Build Security Scans:** Source code is actively scanned for hardcoded secrets using **GitLeaks** and statically analyzed for vulnerabilities (SAST) using **Semgrep**.
+* **Build & Containerize:** Java applications are built via Maven and packaged into minimal container images using Docker Buildx.
+* **Post-Build Vulnerability Scanning:** Before distribution, **Trivy** scans container images for OS and library-level CVEs.
+* **Image Registry & Provenance:** Production-ready container images are pushed to the **GitHub Container Registry (GHCR)** alongside generated Software Bill of Materials (SBOMs).
+* **Helm Chart Delivery:** Application workloads are packaged into standardized **Helm Charts**, allowing declarative GitOps deployments seamlessly managed by ArgoCD and promoted by Kargo.
