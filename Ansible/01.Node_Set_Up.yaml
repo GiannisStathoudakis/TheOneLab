@@ -125,6 +125,7 @@
           token: "{{ node_token }}"
           disable:
             - rke2-ingress-nginx
+            - rke2-traefik-crd
             - rke2-traefik
             - rke2-servicelb
         mode: '0600'
