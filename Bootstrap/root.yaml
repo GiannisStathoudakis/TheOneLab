@@ -9,89 +9,60 @@ spec:
         elements:
           - app: vault
             path: Apps/Vault
-            wave: "0"
-          - app: namespaces
-            path: Apps/Namespaces
-            wave: "0"
-          - app: cilium
-            path: Apps/Cilium
-            wave: "0"
-          - app: openebs
-            path: Apps/Openebs
-            wave: "0"
-          - app: eso
-            path: Apps/External-Secrets
-            wave: "1"
           - app: cert-manager
             path: Apps/Cert-Manager
-            wave: "2"
-          - name: envoy-controller
-            path: Apps/Envoy-Controller
-            wave: "2"
+          - app: eso
+            path: Apps/External-Secrets
+          - app: cilium
+            path: Apps/Cilium
           - app: envoy
             path: Apps/Envoy
-            wave: "3"
-          - app: authentik
-            path: Apps/Authentik
-            wave: "3"
-          - app: renovate 
-            path: Apps/Renovate
-            wave: "3"
-          - app: kargo
-            path: Apps/Kargo
-            wave: "3"
           - app: argocd
             path: Apps/Argocd
-            wave: "4"
+          - app: openebs
+            path: Apps/Openebs
+          - app: authentik
+            path: Apps/Authentik
           - app:  grafana
             path: Apps/Grafana
-            wave: "4"
           - app:  garage
             path: Apps/Garage
-            wave: "4"
-          - app: rancher
-            path: Apps/Rancher
-            wave: "4"
-          - app: mysql 
-            path: Apps/MySQL
-            wave: "4"
-          - app: redpanda 
-            path: Apps/RedPanda
-            wave: "4"
           - app: loki
             path: Apps/Loki
-            wave: "5"
           - app: victoria-metrics
             path: Apps/VictoriaMetrics
-            wave: "5"
           - app: tempo
             path: Apps/Tempo 
-            wave: "5"
-          - app: pyroscope
-            path: Apps/Pyroscope
-            wave: "5"
-          - app: tetragon
-            path: Apps/Tetragon
-            wave: "5"
           - app: node-exporter
             path: Apps/Node-exporter
-            wave: "6"
+          - app: pyroscope
+            path: Apps/Pyroscope
+          - app: tetragon
+            path: Apps/Tetragon
           - app: alloy
             path: Apps/Alloy
-            wave: "6"
-          - app: obi 
-            path: Apps/Opentelemetry-Ebpf-Instrumentation
-            wave: "6"
+          - app: kyverno
+            path: Apps/Kyverno
+          - app: renovate 
+            path: Apps/Renovate
+          - app: mysql 
+            path: Apps/MySQL
+          - app: redpanda 
+            path: Apps/RedPanda
           #- app: temporal 
           #  path: Apps/Temporal
+          - app: kargo
+            path: Apps/Kargo
           #- app: ecommerce-kargo
           #  path: Kargo-Control/Ecomerce
+          - app: obi 
+            path: Apps/Opentelemetry-Ebpf-Instrumentation
+          - app: rancher
+            path: Apps/Rancher
 
   template:
     metadata:
       name: '{{app}}-root'
-      annotations:
-        argocd.argoproj.io/sync-wave: '{{wave}}'
     spec:
       project: default
       source:
@@ -104,13 +75,3 @@ spec:
         automated:
           prune: true
           selfHeal: true
-        syncOptions:
-          - CreateNamespace=true
-          - SkipDryRunOnMissingResource=true 
-        
-        retry:
-          limit: 5 
-          backoff:
-            duration: 10s 
-            factor: 2 
-            maxDuration: 3m
