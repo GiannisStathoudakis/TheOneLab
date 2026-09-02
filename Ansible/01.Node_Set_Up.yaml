@@ -1,0 +1,215 @@
+---
+# ==============================================================================
+# PLAY 1: COMMON SETUP (Runs on BOTH Master and Worker)
+# ==============================================================================
+- hosts: all
+  become: true
+
+  vars:
+    admin_user: "{{ ansible_user }}"
+
+  tasks:
+    - name: 01. Install updates for Ubuntu
+      tags: always
+      ansible.builtin.apt:
+        upgrade: dist
+        update_cache: yes
+        autoremove: yes
+
+    - name: 02. Disable UFW Firewall
+      ansible.builtin.systemd:
+        name: ufw
+        state: stopped
+        enabled: false
+
+    - name: 03. Disable swap
+      ansible.builtin.command: swapoff -a
+      when: ansible_swaptotal_mb > 0
+
+    - name: 04. Disable swap permanently
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^([^#\n]*?\sswap\s+.*)$'
+        replace: '# \1'
+
+    - name: 05. Install Common Packages (WireGuard)
+      ansible.builtin.apt:
+        name:
+          - wireguard        # Required for Cilium 
+          - wireguard-tools  # Required for Cilium
+        state: present
+
+    - name: 06. Load required kernel modules on boot
+      ansible.builtin.copy:
+        dest: /etc/modules-load.d/k8s.conf
+        content: |
+          overlay
+          br_netfilter
+          iscsi_tcp
+        mode: '0644'
+
+    - name: 07. Load kernel modules immediately
+      ansible.builtin.command: modprobe {{ item }}
+      loop:
+        - overlay
+        - br_netfilter
+        - iscsi_tcp
+      changed_when: false
+
+    - name: 08. Set kernel sysctl parameters for Cilium & Kubernetes
+      ansible.builtin.sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        sysctl_set: true
+        state: present
+        reload: true
+      loop:
+        - { name: 'net.ipv4.ip_forward', value: '1' }
+        - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }
+
+    - name: 09. Create RKE2 directory
+      ansible.builtin.file:
+        path: /etc/rancher/rke2
+        state: directory
+        mode: '0755'
+
+    - name: 10. Disable Root SSH Login
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+      notify: Restart SSH
+
+  handlers:
+    - name: Restart SSH
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
+
+# ==============================================================================
+# PLAY 2: MASTER ONLY SETUP
+# ==============================================================================
+- hosts: master
+  become: true
+  vars_files:
+    - files/secrets.yml
+  vars:
+    admin_user: "{{ ansible_user }}"
+
+  tasks:
+
+    - name: 11. Install LVM packages for OpenEBS
+      ansible.builtin.apt:
+        name:
+          - lvm2             # Required for OpenEBS LocalPV
+          - xfsprogs         # Required for formatting pod volumes
+        state: present
+
+    - name: 12. Check if lvmvg Volume Group already exists
+      ansible.builtin.command: vgs lvmvg
+      register: vg_check
+      failed_when: false
+      changed_when: false
+
+    - name: 13. Create LVM Volume Group (lvmvg) on /dev/vdb
+      ansible.builtin.command: vgcreate lvmvg /dev/vdb
+      when: vg_check.rc != 0 
+
+    - name: 14. Write RKE2 master configuration file
+      ansible.builtin.copy:
+        dest: /etc/rancher/rke2/config.yaml
+        content: |
+          write-kubeconfig-mode: "0644"
+          cni: none
+          disable-kube-proxy: true
+          token: "{{ node_token }}"
+          disable:
+            - rke2-ingress-nginx
+            - rke2-traefik
+            - rke2-servicelb
+        mode: '0600'
+
+    - name: 15. Download and execute RKE2 installer
+      ansible.builtin.shell: |
+        curl -sfL https://get.rke2.io | sh -
+      args:
+        creates: /usr/local/bin/rke2
+
+    - name: 16. Enable and start rke2-server
+      ansible.builtin.systemd:
+        name: rke2-server
+        state: started
+        enabled: true
+
+    - name: 17. Symlink kubectl to global path
+      ansible.builtin.file:
+        src: /var/lib/rancher/rke2/bin/kubectl
+        dest: /usr/local/bin/kubectl
+        state: link
+
+    - name: 18. Create .kube directory for admin user
+      ansible.builtin.file:
+        path: "/home/{{ admin_user }}/.kube"
+        state: directory
+        mode: '0755'
+        owner: "{{ admin_user }}"
+
+    - name: 19. Copy cluster kubeconfig to local user
+      ansible.builtin.copy:
+        src: /etc/rancher/rke2/rke2.yaml
+        dest: "/home/{{ admin_user }}/.kube/config"
+        remote_src: true
+        mode: '0600'
+        owner: "{{ admin_user }}"
+
+    - name: 20. Add RKE2 binaries to user PATH
+      ansible.builtin.lineinfile:
+        path: "/home/{{ admin_user }}/.bashrc"
+        line: "export PATH=$PATH:/var/lib/rancher/rke2/bin"
+        create: true
+        mode: '0644'
+        owner: "{{ admin_user }}"
+
+    - name: 21. Install Latest Helm
+      ansible.builtin.shell: |
+        curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      args:
+        creates: /usr/local/bin/helm
+
+# ==============================================================================
+# PLAY 3: WORKER ONLY SETUP
+# ==============================================================================
+- hosts: worker
+  become: true
+  vars_files:
+    - files/secrets.yml
+  vars:
+    admin_user: "{{ ansible_user }}"
+
+  tasks:
+    - name: 22. Write RKE2 worker configuration
+      ansible.builtin.copy:
+        dest: /etc/rancher/rke2/config.yaml
+        content: |
+          server: https://{{ hostvars[groups['master'][0]]['ansible_host'] }}:9345
+          token: "{{ node_token }}"
+        mode: '0600'
+
+    - name: 23. Download and execute RKE2 agent installer
+      ansible.builtin.shell: curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" sh -
+      args:
+        creates: /usr/local/bin/rke2
+
+    - name: 24. Enable and start rke2-agent
+      ansible.builtin.systemd:
+        name: rke2-agent
+        state: started
+        enabled: true
+
+    - name: 25. Add RKE2 binaries to worker PATH
+      ansible.builtin.lineinfile:
+        path: "/home/{{ admin_user }}/.bashrc"
+        line: "export PATH=$PATH:/var/lib/rancher/rke2/bin"
+        create: true
+        mode: '0644'
+        owner: "{{ admin_user }}"
