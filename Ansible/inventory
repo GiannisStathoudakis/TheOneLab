@@ -1,8 +1,0 @@
-[master]
-master-node ansible_host=10.17.3.10
-
-[worker]
-worker-node ansible_host=10.17.3.20
-
-[all:vars]
-ansible_python_interpreter=/usr/bin/python3
