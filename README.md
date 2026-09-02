@@ -14,7 +14,7 @@ If given a cloud budget, the target architecture shifts from a "Stateful Monolit
 
 * **Multi-Cluster Fleet:** Utilizing **Cilium Cluster Mesh**, the infrastructure would be split into dedicated clusters (e.g., CI/CD Hub, UAT, and Production) sharing a secure, flat, wireguard-encrypted network.
 * **Externalized State (Disposable Clusters):** State is the enemy of Kubernetes reliability. In an enterprise model, stateful components would be outsourced to managed cloud services (e.g., AWS RDS for MySQL, Cloudflare R2 / AWS S3 instead of local Garage storage, and HashiCorp Cloud Vault).
-* **Instant Disaster Recovery:** By moving databases and object storage out of the worker nodes, the Kubernetes clusters become 100% stateless and disposable. In the event of a total cluster failure, ArgoCD can bootstrap a fresh replacement cluster in minutes, while Velero is strictly reserved for lightweight Kubernetes resource migrations (like OS or CNI upgrades).
+* **Instant Disaster Recovery:** By moving databases and object storage out of the worker nodes, the Kubernetes clusters become 100% stateless and disposable. In the event of a total cluster failure, ArgoCD can bootstrap a fresh replacement cluster in minutes.
 * **Zero-Downtime Upgrades (Blue/Green):** A stateless architecture transforms risky, in-place Kubernetes version upgrades into safe, Blue/Green cluster replacements. Instead of upgrading a live cluster, a fresh "Green" cluster is bootstrapped via GitOps. Using weighted DNS or a Global Load Balancer, live traffic is gradually shifted (e.g., 95% old, 5% new) to verify stability before completely decommissioning the old "Blue" infrastructure.
 
 ---
