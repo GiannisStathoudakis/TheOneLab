@@ -10,6 +10,9 @@ spec:
           - app: vault
             path: Apps/Vault
             wave: "0"
+          - app: namespaces
+            path: Apps/Namespaces
+            wave: "0"
           - app: cilium
             path: Apps/Cilium
             wave: "0"
@@ -21,6 +24,9 @@ spec:
             wave: "1"
           - app: cert-manager
             path: Apps/Cert-Manager
+            wave: "2"
+          - name: envoy-controller
+            path: Apps/Envoy-Controller
             wave: "2"
           - app: envoy
             path: Apps/Envoy
