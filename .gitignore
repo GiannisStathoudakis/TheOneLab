@@ -1,4 +1,8 @@
-inventory.ini
+inventory
 ansible.cfg
 secrets.yml
 cluster-keys.json
+terraform.tfstate.backup
+terraform.tfstate
+.terraform.lock.hcl
+linux_amd64
