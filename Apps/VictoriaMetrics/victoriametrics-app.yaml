@@ -20,12 +20,12 @@ spec:
           
           persistentVolume:
             enabled: true
-            size: 5Gi
             storageClassName: "openebs-lvm"
             accessModes:
               - ReadWriteOnce
               
-          retentionPeriod: "1"
+          #Delete Metrics after 1 year
+          retentionPeriod: "1y" 
           
           resources:
             requests:
