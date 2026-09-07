@@ -23,6 +23,7 @@ If given a cloud budget, the target architecture shifts from a "Stateful Monolit
 * **Instant Disaster Recovery:** By moving databases, event streaming, identity, secrets, and object storage out of the worker nodes, the Kubernetes clusters become 100% stateless and disposable. In the event of a total cluster failure, you simply re-run your Terraform & Ansible playbooks to provision fresh infrastructure, and ArgoCD automatically bootstraps and syncs the entire application stack from Git in minutes.
 * **Zero-Downtime Upgrades (Blue/Green):** A stateless architecture transforms risky, in-place Kubernetes version upgrades into safe, Blue/Green cluster replacements. Instead of upgrading a live cluster, a fresh "Green" cluster is bootstrapped via GitOps. Using weighted DNS or a Global Load Balancer, live traffic is gradually shifted (e.g., 95% old, 5% new) to verify stability before completely decommissioning the old "Blue" infrastructure.
 * **Frictionless Node Auto-Provisioning (Karpenter):** By eliminating stateful workloads and persistent volumes from the compute plane, the cluster unlocks highly aggressive, risk-free autoscaling. Tools like Karpenter (or AKS Node Auto-Provisioning) can dynamically spin up perfectly sized, heterogeneous cloud VMs in seconds based on pending pod requirements. During off-hours, the autoscaler can ruthlessly consolidate workloads and terminate underutilized VMs to minimize cloud billing, entirely avoiding the volume-detachment delays and data loss risks associated with stateful pod evictions.
+* **Cloud FinOps & Cost Optimization:** The observability and compute layers are engineered with a strict FinOps mindset to minimize cloud billing. By offloading high-volume telemetry (Loki logs, Tempo traces, Pyroscope profiles) exclusively to highly cost-effective S3-compatible Object Storage, the architecture completely avoids the premium costs of persistent Block Storage. Furthermore, aggressive stream-level retention policies (e.g., automatically pruning high-volume 'info' logs after 60 days while retaining critical 'errors' for compliance) prevent storage bloat. Combined with predictive right-sizing tools (like Robusta KRR) and dynamic node autoscaling, the infrastructure guarantees that compute and storage costs scale purely on actual utilization, eliminating idle over-provisioning.
 
 ---
 
@@ -68,8 +69,9 @@ If given a cloud budget, the target architecture shifts from a "Stateful Monolit
 | **Grafana** | Unified dashboard visualization and APM UI |
 | **Grafana Alloy** | Primary telemetry pipeline (logs, metrics, trace ingestion) |
 | **VictoriaMetrics** | High-performance time-series metrics database (Prometheus-compatible) |
-| **Loki** | Log aggregation and querying |
-| **Tempo** | Distributed tracing backend with active Metrics-Generator |
+| **Loki** | Log aggregation and querying *(FinOps optimized: S3-backed storage with dynamic retention stream-selectors)* |
+| **Tempo** | Distributed tracing backend with active Metrics-Generator *(FinOps optimized: S3-backed with strict 7-day retention)* |
+| **Robusta KRR** | *(Planned)* Kubernetes Resource Recommender for compute right-sizing and minimizing idle over-provisioning |
 | **OpenTelemetry eBPF (OBI)** | Kernel-level zero-code auto-instrumentation for HTTP/gRPC RED metrics and traces |
 | **Pyroscope** | Continuous application profiling backend |
 | **Node Exporter** | Host-level hardware and OS metric collector |
