@@ -124,7 +124,32 @@ spec:
 
               loki.source.kubernetes "pod_logs" {
                 targets    = discovery.relabel.pod_logs.output
+                forward_to = [loki.process.pod_logs_parse.receiver]
+              }
+
+              loki.process "pod_logs_parse" {
                 forward_to = [loki.write.loki.receiver]
+
+                stage.json {
+                  expressions = {
+                    level = "level", 
+                  }
+                  drop_malformed = false 
+                }
+
+                stage.regex {
+                  expression = "(?i)(?:level=|level: |\\[|\\s|^)(?P<level>info|debug|warn|warning|error|fatal|trace)(?:\\]|\\s|,|:|$)"
+                }
+
+                stage.labels {
+                  values = {
+                    level = "level",
+                  }
+                }
+
+                stage.lowercase {
+                  labels = ["level"]
+                }
               }
 
               // ==========================================
