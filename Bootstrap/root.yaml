@@ -23,22 +23,24 @@ spec:
             path: Apps/Openebs
           - app: authentik
             path: Apps/Authentik
-          #- app:  grafana
-          #  path: Apps/Grafana
+          - app:  grafana
+            path: Apps/Grafana
           - app:  garage
             path: Apps/Garage
-          #- app: loki
-          #  path: Apps/Loki
+          - app: loki
+            path: Apps/Loki
           #- app: victoria-metrics
           #  path: Apps/VictoriaMetrics
           #- app: tempo
           #  path: Apps/Tempo 
           #- app: node-exporter
           #  path: Apps/Node-exporter
-          #- app: pyroscope
-          #  path: Apps/Pyroscope
-          #- app: tetragon
-          #  path: Apps/Tetragon
+          - app: pyroscope
+            path: Apps/Pyroscope
+          - app: tetragon
+            path: Apps/Tetragon
+          - app: mimir
+            path: Apps/Mimir
           #- app: alloy
           #  path: Apps/Alloy
           #- app: kyverno
