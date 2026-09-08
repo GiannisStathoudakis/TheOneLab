@@ -50,7 +50,7 @@ spec:
           configMap:
             content: |-
               // ==========================================
-              // 1. VictoriaMetrics (cAdvisor Pod Resource Metrics)
+              // 1. Kubernetes Nodes (cAdvisor Pod Resource Metrics)
               // ==========================================
               discovery.kubernetes "nodes" {
                 role = "node"
@@ -73,12 +73,12 @@ spec:
                 tls_config {
                   insecure_skip_verify = true
                 }
-                forward_to = [prometheus.remote_write.victoriametrics.receiver]
+                forward_to = [prometheus.remote_write.mimir.receiver]
               }
 
-              prometheus.remote_write "victoriametrics" {
+              prometheus.remote_write "mimir" {
                 endpoint {
-                  url = "http://victoria-metrics-server.victoria.svc.cluster.local:8428/api/v1/write"
+                  url = "http://mimir-distributor.mimir.svc.cluster.local:8080/api/v1/push"
                 }
               }
 
@@ -222,7 +222,7 @@ spec:
               otelcol.processor.batch "default" {
                 output {
                   traces  = [otelcol.exporter.otlp.tempo.input]
-                  metrics = [otelcol.exporter.prometheus.to_victoriametrics.input]
+                  metrics = [otelcol.exporter.prometheus.to_mimir.input]
                 }
               }
 
@@ -235,8 +235,8 @@ spec:
                 }
               }
 
-              otelcol.exporter.prometheus "to_victoriametrics" {
-                forward_to = [prometheus.remote_write.victoriametrics.receiver]
+              otelcol.exporter.prometheus "to_mimir" {
+                forward_to = [prometheus.remote_write.mimir.receiver]
               }
 
               // ==========================================
@@ -284,7 +284,7 @@ spec:
 
               prometheus.scrape "annotated_endpoints" {
                 targets    = discovery.relabel.annotated_endpoints.output
-                forward_to = [prometheus.remote_write.victoriametrics.receiver]
+                forward_to = [prometheus.remote_write.mimir.receiver]
               }
 
   destination:
