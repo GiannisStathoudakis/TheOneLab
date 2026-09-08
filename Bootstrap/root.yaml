@@ -17,16 +17,16 @@ spec:
             path: Apps/Cilium
           - app: envoy
             path: Apps/Envoy
-          #- app: argocd
-          #  path: Apps/Argocd
+          - app: argocd
+            path: Apps/Argocd
           - app: openebs
             path: Apps/Openebs
-          #- app: authentik
-          #  path: Apps/Authentik
+          - app: authentik
+            path: Apps/Authentik
           #- app:  grafana
           #  path: Apps/Grafana
-          #- app:  garage
-          #  path: Apps/Garage
+          - app:  garage
+            path: Apps/Garage
           #- app: loki
           #  path: Apps/Loki
           #- app: victoria-metrics
