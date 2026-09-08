@@ -32,6 +32,9 @@
         - loki-logs
         - tempo-traces
         - pyroscope-profiles
+        - mimir-blocks
+        - mimir-ruler
+        - mimir-alertmanager
       register: bucket_creation
       changed_when: "'created' in bucket_creation.stdout | lower"
       ignore_errors: true
@@ -42,6 +45,7 @@
         - loki
         - tempo
         - pyroscope
+        - mimir
       register: api_keys
       changed_when: "'Secret key' in api_keys.stdout"
       ignore_errors: true
@@ -53,6 +57,9 @@
         - { bucket: 'loki-logs', key: 'loki' }
         - { bucket: 'tempo-traces', key: 'tempo' }
         - { bucket: 'pyroscope-profiles', key: 'pyroscope' }
+        - { bucket: 'mimir-blocks', key: 'mimir' }
+        - { bucket: 'mimir-ruler', key: 'mimir' }
+        - { bucket: 'mimir-alertmanager', key: 'mimir' }
       changed_when: false
       ignore_errors: true
 
