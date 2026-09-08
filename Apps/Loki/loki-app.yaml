@@ -23,7 +23,6 @@ spec:
           
           compactor:
             working_directory: /var/loki/compactor
-            shared_store: s3
             compaction_interval: 10m
             retention_enabled: true
             retention_delete_delay: 2h
@@ -71,6 +70,8 @@ spec:
 
         singleBinary:
           replicas: 1
+          nodeSelector:
+            node-role.kubernetes.io/control-plane: "true"
           persistence:
             enabled: true
             size: 5Gi
