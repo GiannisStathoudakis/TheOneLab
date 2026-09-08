@@ -21,8 +21,9 @@ spec:
 
         mimir:
           structuredConfig:
+            ingest_storage:
+              enabled: false
             ingester:
-              push_grpc_method_enabled: true
               ring:
                 replication_factor: 1
             blocks_storage:
@@ -58,7 +59,6 @@ spec:
 
         rollout_operator:
           enabled: false
-
 
         ingester:
           replicas: 1
