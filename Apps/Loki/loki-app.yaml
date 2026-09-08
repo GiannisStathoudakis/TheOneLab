@@ -35,7 +35,11 @@ spec:
             retention_stream:
               - selector: '{level="info"}'
                 priority: 1
-                period: 1440h
+                period: 696h
+              
+              - selector: '{log_type="tetragon_security"}'
+                priority: 2
+                period: 8760h
           
           commonConfig:
             replication_factor: 1
