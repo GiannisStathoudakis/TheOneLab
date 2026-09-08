@@ -31,10 +31,10 @@ spec:
             path: Apps/Loki
           #- app: victoria-metrics
           #  path: Apps/VictoriaMetrics
-          #- app: tempo
-          #  path: Apps/Tempo 
-          #- app: node-exporter
-          #  path: Apps/Node-exporter
+          - app: tempo
+            path: Apps/Tempo 
+          - app: node-exporter
+            path: Apps/Node-exporter
           - app: pyroscope
             path: Apps/Pyroscope
           - app: tetragon
