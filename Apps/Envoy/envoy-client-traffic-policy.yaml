@@ -1,0 +1,23 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: global-security-policy
+  namespace: envoy-gateway-system
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: lab-gateway
+  tls:
+    minVersion: "1.2"
+    alpnProtocols:
+      - "h2"
+      - "http/1.1"
+  headers:
+    set:
+      Strict-Transport-Security: "max-age=31536000; includeSubDomains"
+      X-Frame-Options: "SAMEORIGIN"
+      X-Content-Type-Options: "nosniff"
+      X-XSS-Protection: "1; mode=block"
+      Referrer-Policy: "strict-origin-when-cross-origin"
+#for extra a waf can safe the infra

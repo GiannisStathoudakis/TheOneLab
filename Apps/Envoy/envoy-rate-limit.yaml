@@ -1,0 +1,35 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: global-gateway-rate-limit
+  namespace: envoy-gateway-system
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: lab-gateway
+  rateLimit:
+    type: Global
+    global:
+      rules:
+        - limit:
+            requests: 300
+            unit: Second
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: authentik-rate-limit
+  namespace: authentik
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: authentik-route
+  rateLimit:
+    type: Global
+    global:
+      rules:
+        - limit:
+            requests: 20
+            unit: Second
