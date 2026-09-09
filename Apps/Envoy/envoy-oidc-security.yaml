@@ -8,14 +8,13 @@ spec:
     group: gateway.networking.k8s.io
     kind: HTTPRoute
     name: hubble-route
-  extAuth:
-    oidc:
-      provider:
-        issuer: "https://authentik.kublab.org/application/o/envoy-gateway/"
-      clientSecret:
-        name: envoy-oidc-secret
-      clientId: "b8sA9M7pVIKv4T74UsRXrp690l6QV2VM0pF4OeAz"
-      scopes:
-        - "openid"
-        - "email"
-        - "profile"
+  oidc:
+    provider:
+      issuer: "https://authentik.kublab.org/application/o/envoy-gateway/"
+    clientSecret:
+      name: envoy-oidc-secret
+    clientId: "b8sA9M7pVIKv4T74UsRXrp690l6QV2VM0pF4OeAz"
+    scopes:
+      - "openid"
+      - "email"
+      - "profile"
