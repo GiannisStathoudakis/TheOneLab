@@ -11,7 +11,7 @@ spec:
   oidc:
     provider:
       issuer: "https://authentik.kublab.org/application/o/envoy-gateway/"
-    clientID: "b8sA9M7pVIKv4T74UsRXrp690l6QV2VM0pF4OeAz"
+    clientID: "WQdGwEafDJMHx2X7azaWk7exGf7h5gEhQ9GVCGCa"
     clientSecret:
       name: envoy-oidc-secret
     scopes:
@@ -32,7 +32,7 @@ spec:
   oidc:
     provider:
       issuer: "https://authentik.kublab.org/application/o/envoy-gateway/"
-    clientID: "b8sA9M7pVIKv4T74UsRXrp690l6QV2VM0pF4OeAz"
+    clientID: "WQdGwEafDJMHx2X7azaWk7exGf7h5gEhQ9GVCGCa"
     clientSecret:
       name: envoy-oidc-secret
     scopes:
