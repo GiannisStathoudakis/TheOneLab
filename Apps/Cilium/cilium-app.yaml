@@ -8,16 +8,10 @@ spec:
   source:
     repoURL: https://helm.cilium.io/
     chart: cilium
-    targetRevision: 1.20.1
+    targetRevision: 1.19.5
     helm:
       values: |
         kubeProxyReplacement: "true"
-        routingMode: native
-        autoDirectNodeRoutes: true
-        ipv4NativeRoutingCIDR: "10.0.0.0/8"
-        cleanBpfState: true     
-        loadBalancer:
-          mode: dsr
         localRedirectPolicy: true
         k8sServiceHost: "10.17.3.10"
         k8sServicePort: 6443
@@ -63,27 +57,3 @@ spec:
     automated:
       prune: true
       selfHeal: true
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: cilium-l2-announcements-fix
-  namespace: kube-system
-rules:
-- apiGroups: ["coordination.k8s.io"]
-  resources: ["leases"]
-  verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: cilium-l2-announcements-fix
-  namespace: kube-system
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: cilium-l2-announcements-fix
-subjects:
-- kind: ServiceAccount
-  name: cilium
-  namespace: kube-system
