@@ -12,6 +12,8 @@ spec:
     helm:
       values: |
         kubeProxyReplacement: "true"
+        routingMode: native
+        autoDirectNodeRoutes: true
         loadBalancer:
           mode: dsr
         localRedirectPolicy: true
