@@ -18,12 +18,11 @@ If given a cloud budget, the target architecture shifts from a "Stateful Monolit
   * **Messaging & Event Streaming:** The in-cluster Redpanda brokers would be replaced by a managed Kafka-compatible service such as **Azure Event Hubs** (or AWS MSK). This provides enterprise SLAs out of the box and offloads stream persistence, completely eliminating the need to maintain distributed broker nodes or orchestrate fragile data-mirroring pipelines during Kubernetes version migrations.
   * **Identity Management:** The in-cluster Authentik instance would be replaced by a managed cloud tenant (e.g., Microsoft Entra ID) to avoid maintaining stateful user sessions and tokens inside the cluster.
   * **Secrets Management:** The in-cluster HashiCorp Vault would be replaced by a managed cloud secrets vault (e.g., Azure Key Vault, AWS Secrets Manager) using Workload Identity to completely remove secret persistence from the cluster state.
-  * **Observability:** VictoriaMetrics would be replaced by Grafana Mimir. While VictoriaMetrics requires persistent block storage inside the cluster, Mimir natively streams and stores data directly to Object Storage (Azure Blob / S3). This achieves true statelessness without the operational complexity of configuring `vmbackup` and `vmrestore` pipelines to preserve or inspect older metrics during cluster migrations.
 * **Consolidated CI/CD Platform:** Kargo, GitHub Actions, and GHCR would be replaced by a unified enterprise platform like Azure DevOps. Storing code, artifacts, and container images centrally in Azure DevOps allows leveraging native multi-stage YAML pipelines and manual approval gates, removing the need for an in-cluster GitOps promotion orchestrator like Kargo.
 * **Instant Disaster Recovery:** By moving databases, event streaming, identity, secrets, and object storage out of the worker nodes, the Kubernetes clusters become 100% stateless and disposable. In the event of a total cluster failure, you simply re-run your Terraform & Ansible playbooks to provision fresh infrastructure, and ArgoCD automatically bootstraps and syncs the entire application stack from Git in minutes.
 * **Zero-Downtime Upgrades (Blue/Green):** A stateless architecture transforms risky, in-place Kubernetes version upgrades into safe, Blue/Green cluster replacements. Instead of upgrading a live cluster, a fresh "Green" cluster is bootstrapped via GitOps. Using weighted DNS or a Global Load Balancer, live traffic is gradually shifted (e.g., 95% old, 5% new) to verify stability before completely decommissioning the old "Blue" infrastructure.
 * **Frictionless Node Auto-Provisioning (Karpenter):** By eliminating stateful workloads and persistent volumes from the compute plane, the cluster unlocks highly aggressive, risk-free autoscaling. Tools like Karpenter (or AKS Node Auto-Provisioning) can dynamically spin up perfectly sized, heterogeneous cloud VMs in seconds based on pending pod requirements. During off-hours, the autoscaler can ruthlessly consolidate workloads and terminate underutilized VMs to minimize cloud billing, entirely avoiding the volume-detachment delays and data loss risks associated with stateful pod evictions.
-* **Cloud FinOps & Cost Optimization:** The observability and compute layers are engineered with a strict FinOps mindset to minimize cloud billing. By offloading high-volume telemetry (Loki logs, Tempo traces, Pyroscope profiles) exclusively to highly cost-effective S3-compatible Object Storage, the architecture completely avoids the premium costs of persistent Block Storage. Furthermore, aggressive stream-level retention policies (e.g., automatically pruning high-volume 'info' logs after 60 days while retaining critical 'errors' for compliance) prevent storage bloat. Combined with predictive right-sizing tools (like Robusta KRR) and dynamic node autoscaling, the infrastructure guarantees that compute and storage costs scale purely on actual utilization, eliminating idle over-provisioning.
+* **Cloud FinOps & Cost Optimization:** The observability and compute layers are engineered with a strict FinOps mindset to minimize cloud billing. By offloading high-volume telemetry (Mimir metrics, Loki logs, Tempo traces, Pyroscope profiles) exclusively to highly cost-effective S3-compatible Object Storage, the architecture completely avoids the premium costs of persistent Block Storage. Furthermore, aggressive stream-level retention policies (e.g., automatically pruning high-volume 'info' logs after 60 days while retaining critical 'errors' for compliance) prevent storage bloat. Combined with predictive right-sizing tools (like Robusta KRR) and dynamic node autoscaling, the infrastructure guarantees that compute and storage costs scale purely on actual utilization, eliminating idle over-provisioning.
 
 ---
 
@@ -36,7 +35,7 @@ If given a cloud budget, the target architecture shifts from a "Stateful Monolit
 | **Cilium** | CNI, Load Balancer, Hubble Observability, East-West routing (eBPF Kube-Proxy replacement) |
 | **Envoy Gateway** | North-South Traffic Management (Kubernetes Gateway API) |
 | **OpenEBS (LVM)** | High-performance local persistent block storage (LVM LocalPV CSI) |
-| **Garage** | Lightweight, distributed S3-compatible object storage (Loki & Tempo & Pyroscope backends) |
+| **Garage** | Lightweight, distributed S3-compatible object storage (Mimir, Loki, Tempo & Pyroscope backend) |
 | **NodeLocal DNSCache** | Caches DNS queries locally on worker nodes to eliminate CoreDNS latency |
 
 ### GitOps, Management & Security
@@ -66,9 +65,9 @@ If given a cloud budget, the target architecture shifts from a "Stateful Monolit
 
 | Component | Role |
 | :--- | :--- |
-| **Grafana** | Unified dashboard visualization and APM UI |
+| **Grafana** | Unified dashboard visualization, Alerting and APM UI |
 | **Grafana Alloy** | Primary telemetry pipeline (logs, metrics, trace ingestion) |
-| **VictoriaMetrics** | High-performance time-series metrics database (Prometheus-compatible) |
+| **Grafana Mimir** | Horizontally scalable, highly available time-series metrics database *(FinOps optimized: S3-backed storage)* |
 | **Loki** | Log aggregation and querying *(FinOps optimized: S3-backed storage with dynamic retention stream-selectors)* |
 | **Tempo** | Distributed tracing backend with active Metrics-Generator *(FinOps optimized: S3-backed with strict 7-day retention)* |
 | **Robusta KRR** | *(Planned)* Kubernetes Resource Recommender for compute right-sizing and minimizing idle over-provisioning |
