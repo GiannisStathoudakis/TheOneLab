@@ -29,18 +29,18 @@ spec:
             path: Apps/Garage
           - app: loki
             path: Apps/Loki
-          #- app: tempo
-          #  path: Apps/Tempo 
-          #- app: node-exporter
-          #  path: Apps/Node-exporter
+          - app: tempo
+            path: Apps/Tempo 
+          - app: node-exporter
+            path: Apps/Node-exporter
           - app: pyroscope
             path: Apps/Pyroscope
-          #- app: tetragon
-          #  path: Apps/Tetragon
+          - app: tetragon
+            path: Apps/Tetragon
           - app: mimir
             path: Apps/Mimir
-          #- app: alloy
-          #  path: Apps/Alloy
+          - app: alloy
+            path: Apps/Alloy
           #- app: kyverno
           #  path: Apps/Kyverno
           #- app: renovate 
@@ -53,8 +53,8 @@ spec:
           #  path: Apps/Kargo
           #- app: ecommerce-kargo
           #  path: Kargo-Control/Ecomerce
-          #- app: obi 
-          #  path: Apps/Opentelemetry-Ebpf-Instrumentation
+          - app: obi 
+            path: Apps/Opentelemetry-Ebpf-Instrumentation
           #- app: rancher
           #  path: Apps/Rancher
 
