@@ -4,14 +4,14 @@ metadata:
   name: hubble-auth-policy
   namespace: kube-system
 spec:
-  targetRef:
-    group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: hubble-route
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: hubble-route
   oidc:
     provider:
       issuer: "https://authentik.kublab.org/application/o/envoy-gateway/"
-    clientId: "b8sA9M7pVIKv4T74UsRXrp690l6QV2VM0pF4OeAz"
+    clientID: "b8sA9M7pVIKv4T74UsRXrp690l6QV2VM0pF4OeAz"
     clientSecret:
       name: envoy-oidc-secret
     scopes:
