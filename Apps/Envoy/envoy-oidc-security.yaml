@@ -18,3 +18,24 @@ spec:
       - "openid"
       - "email"
       - "profile"
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: pyroscope-auth-policy
+  namespace: pyroscope
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: pyroscope-route
+  oidc:
+    provider:
+      issuer: "https://authentik.kublab.org/application/o/envoy-gateway/"
+    clientID: "b8sA9M7pVIKv4T74UsRXrp690l6QV2VM0pF4OeAz"
+    clientSecret:
+      name: envoy-oidc-secret
+    scopes:
+      - "openid"
+      - "email"
+      - "profile"
