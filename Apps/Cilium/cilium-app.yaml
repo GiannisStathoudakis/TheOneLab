@@ -12,6 +12,8 @@ spec:
     helm:
       values: |
         kubeProxyReplacement: "true"
+        loadBalancer:
+          mode: dsr
         localRedirectPolicy: true
         k8sServiceHost: "10.17.3.10"
         k8sServicePort: 6443
