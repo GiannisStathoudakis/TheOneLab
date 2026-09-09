@@ -11,9 +11,9 @@ spec:
   oidc:
     provider:
       issuer: "https://authentik.kublab.org/application/o/envoy-gateway/"
+    clientId: "b8sA9M7pVIKv4T74UsRXrp690l6QV2VM0pF4OeAz"
     clientSecret:
       name: envoy-oidc-secret
-    clientId: "b8sA9M7pVIKv4T74UsRXrp690l6QV2VM0pF4OeAz"
     scopes:
       - "openid"
       - "email"
