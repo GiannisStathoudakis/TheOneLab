@@ -1,0 +1,23 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: ecommerce-images
+  namespace: ecommerce
+spec:
+  interval: 2m0s
+  subscriptions:
+    - image:
+        repoURL: ghcr.io/giannisstathoudakis/ms-orders
+        imageSelectionStrategy: NewestBuild 
+        allowTagsRegexes: 
+          - '^[0-9a-f]{40}$'
+    - image:
+        repoURL: ghcr.io/giannisstathoudakis/ms-payment
+        imageSelectionStrategy: NewestBuild
+        allowTagsRegexes: 
+          - '^[0-9a-f]{40}$'
+    - image:
+        repoURL: ghcr.io/giannisstathoudakis/ms-stock
+        imageSelectionStrategy: NewestBuild
+        allowTagsRegexes: 
+          - '^[0-9a-f]{40}$'

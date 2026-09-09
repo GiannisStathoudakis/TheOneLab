@@ -1,0 +1,87 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-addons
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - app: vault
+            path: Apps/Vault
+          - app: cert-manager
+            path: Apps/Cert-Manager
+          - app: eso
+            path: Apps/External-Secrets
+          - app: cilium
+            path: Apps/Cilium
+          - app: envoy
+            path: Apps/Envoy
+          - app: argocd
+            path: Apps/Argocd
+          - app: openebs
+            path: Apps/Openebs
+          - app: authentik
+            path: Apps/Authentik
+          - app:  grafana
+            path: Apps/Grafana
+          - app:  garage
+            path: Apps/Garage
+          - app: loki
+            path: Apps/Loki
+          #- app: victoria-metrics
+          #  path: Apps/VictoriaMetrics
+          - app: tempo
+            path: Apps/Tempo 
+          - app: node-exporter
+            path: Apps/Node-exporter
+          - app: pyroscope
+            path: Apps/Pyroscope
+          - app: tetragon
+            path: Apps/Tetragon
+          - app: mimir
+            path: Apps/Mimir
+          - app: alloy
+            path: Apps/Alloy
+          #- app: kyverno
+          #  path: Apps/Kyverno
+          #- app: renovate 
+          #  path: Apps/Renovate
+          #- app: mysql 
+          #  path: Apps/MySQL
+          #- app: redpanda 
+          #  path: Apps/RedPanda
+          #- app: kargo
+          #  path: Apps/Kargo
+          #- app: ecommerce-kargo
+          #  path: Kargo-Control/Ecomerce
+          - app: obi 
+            path: Apps/Opentelemetry-Ebpf-Instrumentation
+          #- app: rancher
+          #  path: Apps/Rancher
+
+  template:
+    metadata:
+      name: '{{app}}-root'
+    spec:
+      project: default
+      source:
+        repoURL: git@github.com:GiannisStathoudakis/TheOneLab.git
+        targetRevision: HEAD
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - SkipDryRunOnMissingResource=true 
+        
+        retry:
+          limit: 5 
+          backoff:
+            duration: 10s 
+            factor: 2 
+            maxDuration: 3m

@@ -1,0 +1,21 @@
+apiVersion: external-secrets.io/v1 
+kind: ExternalSecret
+metadata:
+  name: grafana-admin-secret
+  namespace: grafana
+spec:
+  refreshInterval: "1h"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: grafana-oidc-secret
+  data:
+  - secretKey: clientSecret
+    remoteRef:
+      key: secret/grafana
+      property: clientSecret
+  - secretKey: clientID
+    remoteRef:
+      key: secret/grafana
+      property: clientId

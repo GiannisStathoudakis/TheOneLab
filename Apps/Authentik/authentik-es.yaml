@@ -1,0 +1,26 @@
+apiVersion: external-secrets.io/v1 
+kind: ExternalSecret
+metadata:
+  name: authentik-vault-secrets
+  namespace: authentik
+spec:
+  refreshInterval: "1h"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: authentik-vault-secrets
+    creationPolicy: Owner
+  data:
+  - secretKey: secret_key
+    remoteRef:
+      key: secret/authentik
+      property: AUTHENTIK_SECRET_KEY
+  - secretKey: postgresql-password
+    remoteRef:
+      key: secret/authentik
+      property: AUTHENTIK_POSTGRESQL__PASSWORD
+  - secretKey: bootstrap_password
+    remoteRef:
+      key: secret/authentik
+      property: AUTHENTIK_BOOTSTRAP_PASSWORD

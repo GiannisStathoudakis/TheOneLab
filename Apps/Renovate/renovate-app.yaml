@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: renovate
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: default
+  source:
+    repoURL: ghcr.io/renovatebot/charts
+    chart: renovate
+    targetRevision: 46.251.0
+    helm:
+      values: |
+        cronjob:
+          schedule: "0 14 * * *"
+          successfulJobsHistoryLimit: 1
+          failedJobsHistoryLimit: 3
+          
+        envList:
+          - name: RENOVATE_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: renovate-token
+                key: token
+                
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            memory: 512Mi
+
+        renovate:
+          config: |
+            {
+              "platform": "github",
+              "repositories": ["GiannisStathoudakis/TheOneLab"]
+            }
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

@@ -1,0 +1,53 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://argoproj.github.io/argo-helm
+    chart: argo-cd
+    targetRevision: 10.1.2
+    helm:
+      values: |
+        dex:
+          enabled: false
+
+        global:
+          domain: argocd.kublab.org
+
+        configs:
+          cm:
+            url: https://argocd.kublab.org
+            oidc.config: |
+              name: Authentik
+              issuer: https://authentik.kublab.org/application/o/argocd/
+              clientID: $argocd-oidc-secret:clientID
+              clientSecret: $argocd-oidc-secret:clientSecret
+              requestedScopes: ["openid", "profile", "email", "groups"]
+          
+          rbac:
+            policy.default: ''
+            policy.csv: |
+              g, authentik Admins, role:admin
+          
+        fullnameOverride: "argocd"
+
+        server:
+          extraArgs:
+            - --insecure
+          config:
+            url: https://argocd.kublab.org
+          
+          ingress:
+            enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true

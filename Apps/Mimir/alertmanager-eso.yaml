@@ -1,0 +1,32 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: alertmanager-config-secret
+  namespace: mimir
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: alertmanager-fallback-config
+    template:
+      engineVersion: v2
+      data:
+        alertmanager.yaml: |
+          route:
+            group_by: ['alertname', 'severity']
+            group_wait: 10s
+            group_interval: 5m
+            repeat_interval: 1h
+            receiver: 'discord-notifications'
+            
+          receivers:
+            - name: 'discord-notifications'
+              discord_configs:
+                - webhook_url: '{{ .discord_webhook }}'
+  data:
+    - secretKey: discord_webhook
+      remoteRef:
+        key: secret/mimir
+        property: discord

@@ -1,0 +1,119 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mimir
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: mimir-distributed
+    targetRevision: 6.2.0
+    helm:
+      values: |
+        global:
+          extraEnvFrom:
+            - secretRef:
+                name: mimir-s3-credentials
+
+        kafka:
+          enabled: false 
+
+        mimir:
+          structuredConfig:
+            ingest_storage:
+              enabled: false
+            ingester:
+              push_grpc_method_enabled: true
+              ring:
+                replication_factor: 1
+            blocks_storage:
+              backend: s3
+              s3:
+                endpoint: garage.garage.svc.cluster.local:3900
+                bucket_name: mimir-blocks
+                access_key_id: ${AWS_ACCESS_KEY_ID}
+                secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+                insecure: true
+            ruler_storage:
+              backend: s3
+              s3:
+                endpoint: garage.garage.svc.cluster.local:3900
+                bucket_name: mimir-ruler
+                access_key_id: ${AWS_ACCESS_KEY_ID}
+                secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+                insecure: true
+            alertmanager_storage:
+              backend: s3
+              s3:
+                endpoint: garage.garage.svc.cluster.local:3900
+                bucket_name: mimir-alertmanager
+                access_key_id: ${AWS_ACCESS_KEY_ID}
+                secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+                insecure: true
+            alertmanager:
+              fallback_config_file: /etc/alertmanager-fallback/alertmanager.yaml
+
+        minio:
+          enabled: false
+
+        gateway:
+          enabled: false
+
+        rollout_operator:
+          enabled: false
+
+        ingester:
+          replicas: 1
+          zoneAwareReplication:
+            enabled: false
+            
+        store_gateway:
+          replicas: 1
+          zoneAwareReplication:
+            enabled: false
+
+        compactor:
+          replicas: 1
+
+        distributor:
+          replicas: 1
+
+        querier:
+          replicas: 1
+
+        query_frontend:
+          replicas: 1
+
+        query_scheduler:
+          replicas: 1
+
+        ruler:
+          replicas: 1
+
+        alertmanager:
+          replicas: 1
+          statefulSet:
+            enabled: true
+          fallbackConfig: "" 
+          extraVolumes:
+            - name: alertmanager-fallback
+              secret:
+                secretName: alertmanager-fallback-config
+          extraVolumeMounts:
+            - name: alertmanager-fallback
+              mountPath: /etc/alertmanager-fallback
+              readOnly: true
+            
+        overrides_exporter:
+          replicas: 1
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: mimir
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

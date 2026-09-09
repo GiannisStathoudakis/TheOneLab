@@ -1,0 +1,41 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: production
+  namespace: ecommerce
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: ecommerce-images
+      sources:
+        direct: true
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: git-clone
+          config:
+            repoURL: https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo.git
+            checkout:
+              - branch: master
+                path: ./workspace
+                
+        - uses: yaml-update
+          config:
+            path: ./workspace/chart/values.yaml 
+            updates:
+              - key: microservices.orders.tag
+                value: ${{ imageFrom('ghcr.io/giannisstathoudakis/ms-orders').Tag }}
+              - key: microservices.payment.tag
+                value: ${{ imageFrom('ghcr.io/giannisstathoudakis/ms-payment').Tag }}
+              - key: microservices.stock.tag
+                value: ${{ imageFrom('ghcr.io/giannisstathoudakis/ms-stock').Tag }}
+                
+        - uses: git-commit
+          config:
+            path: ./workspace
+            message: "chore: update microservices image tags via Kargo"
+            
+        - uses: git-push
+          config:
+            path: ./workspace

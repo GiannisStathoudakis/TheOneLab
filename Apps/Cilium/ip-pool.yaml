@@ -1,0 +1,16 @@
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: lab-pool
+  namespace: kube-system
+spec:
+  blocks:
+  - cidr: "10.17.3.100/32"
+---
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumL2AnnouncementPolicy
+metadata:
+  name: l2-policy
+  namespace: kube-system
+spec:
+  loadBalancerIPs: true

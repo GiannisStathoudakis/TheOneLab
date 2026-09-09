@@ -1,0 +1,127 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://grafana-community.github.io/helm-charts
+    chart: loki
+    targetRevision: 18.4.2
+    helm:
+      values: |
+        global:
+          extraEnvFrom:
+            - secretRef:
+                name: loki-s3-credentials
+
+        deploymentMode: Monolithic
+        
+        loki:
+          auth_enabled: false
+          
+          compactor:
+            working_directory: /var/loki/compactor
+            compaction_interval: 10m
+            retention_enabled: true
+            retention_delete_delay: 2h
+            retention_delete_worker_count: 150
+            delete_request_store: s3
+
+          limits_config:
+            retention_period: 8760h 
+            retention_stream:
+              - selector: '{level="info"}'
+                priority: 1
+                period: 696h
+              
+              - selector: '{log_type="tetragon_security"}'
+                priority: 2
+                period: 8760h
+          
+          commonConfig:
+            replication_factor: 1
+            
+          schemaConfig:
+            configs:
+              - from: "2026-01-01"
+                store: tsdb
+                object_store: s3
+                schema: v13
+                index:
+                  prefix: loki_index_
+                  period: 24h
+                  
+          storage:
+            type: s3
+            bucketNames:
+              chunks: loki-logs
+              ruler: loki-logs
+              admin: loki-logs
+            s3:
+              endpoint: garage.garage.svc.cluster.local:3900
+              region: garage
+              insecure: true
+              s3forcepathstyle: true
+        
+        gateway:
+          enabled: false
+
+        singleBinary:
+          replicas: 1
+          nodeSelector:
+            node-role.kubernetes.io/control-plane: "true"
+          persistence:
+            enabled: true
+            size: 5Gi
+            storageClass: openebs-lvm
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+
+        read:
+          replicas: 0
+        write:
+          replicas: 0
+        backend:
+          replicas: 0
+
+        lokiCanary:
+          enabled: false
+        test:
+          enabled: false
+
+        chunksCache:
+          allocatedMemory: 512
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+
+        resultsCache:
+          allocatedMemory: 512
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: loki
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

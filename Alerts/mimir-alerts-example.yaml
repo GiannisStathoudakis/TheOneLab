@@ -1,0 +1,29 @@
+namespace: "mimir-lab"
+groups:
+  - name: "infrastructure-alerts"
+    rules:
+      # ---------------------------------------------------------
+      # Example for testing
+      # ---------------------------------------------------------
+      - alert: TestAlertAlwaysFiring
+        expr: sum(node_load1) > 0
+        for: 0m
+        labels:
+          severity: critical
+          team: devops
+        annotations:
+          summary: "Test Alert - System is operational"
+          description: "Dummy alert for testing Alertmanager routing. Current load is {{ $value }}."
+
+      # ---------------------------------------------------------
+      # Real CPU (>80% for over 2 minutes)
+      # ---------------------------------------------------------
+      - alert: NodeHighCpuUsage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 2m  # CPU must be >80% continuously for 2 minutes
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is at {{ $value | humanize }}% for over 2 minutes. Please check the pods on this node."
