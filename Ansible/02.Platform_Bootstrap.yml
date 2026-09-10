@@ -120,6 +120,6 @@
     - name: 14. Trigger GitOps Apply Root Application
       kubernetes.core.k8s:
         state: present
-        src: "https://raw.githubusercontent.com/GiannisStathoudakis/TheOneLab/master/Bootstrap/root.yaml?v=3"
+        src: "https://raw.githubusercontent.com/GiannisStathoudakis/TheOneLab/main/Bootstrap/root.yaml?v=3"
 
 #kubectl port-forward svc/argocd-server -n argocd 8080:443 --address 0.0.0.0
