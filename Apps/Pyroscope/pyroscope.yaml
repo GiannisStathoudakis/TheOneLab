@@ -46,11 +46,8 @@ spec:
                 insecure: true
                 force_path_style: true
             
-            compactor:
-              blocks_retention_period: 168h 
-            
-            limits_config:
-              retention_period: 168h
+            limits:
+              compactor_blocks_retention_period: 168h
 
   destination:
     server: https://kubernetes.default.svc
