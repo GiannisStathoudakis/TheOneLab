@@ -37,8 +37,8 @@ spec:
             path: Apps/Pyroscope
           - app: tetragon
             path: Apps/Tetragon
-          #- app: mimir
-          #  path: Apps/Mimir
+          - app: mimir
+            path: Apps/Mimir
           - app: alloy
             path: Apps/Alloy
           #- app: kyverno
