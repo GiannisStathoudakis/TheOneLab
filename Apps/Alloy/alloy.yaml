@@ -59,11 +59,36 @@ spec:
                 }
               }
 
-              // Bucket 1: Infra Pods
-              discovery.relabel "infra_pods" {
+              discovery.relabel "pod_labels" {
                 targets = discovery.kubernetes.pods.targets
+
                 rule {
                   source_labels = ["__meta_kubernetes_namespace"]
+                  target_label  = "namespace"
+                }
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_name"]
+                  target_label  = "pod"
+                }
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_container_name"]
+                  target_label  = "container"
+                }
+                rule {
+                  action = "replace"
+                  source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name", "__meta_kubernetes_pod_label_app", "__meta_kubernetes_pod_container_name"]
+                  separator = ";"
+                  regex = "^(?:;)*([^;]+).*$"
+                  replacement = "$1"
+                  target_label = "service_name"
+                }
+              }
+
+              // Bucket 1: Infra Pods
+              discovery.relabel "infra_pods" {
+                targets = discovery.relabel.pod_labels.output
+                rule {
+                  source_labels = ["namespace"]
                   regex         = "garage" 
                   action        = "drop"
                 }
@@ -71,9 +96,9 @@ spec:
 
               // Bucket 2: App Pods
               discovery.relabel "app_pods" {
-                targets = discovery.kubernetes.pods.targets
+                targets = discovery.relabel.pod_labels.output
                 rule {
-                  source_labels = ["__meta_kubernetes_namespace"]
+                  source_labels = ["namespace"]
                   regex         = "garage"
                   action        = "keep"
                 }
