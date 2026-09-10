@@ -12,9 +12,7 @@ data:
         reload
         loop
         bind 0.0.0.0
-        forward . rke2-coredns-rke2-coredns.kube-system.svc.cluster.local {
-            force_tcp
-        }
+        forward . rke2-coredns-rke2-coredns.kube-system.svc.cluster.local
         prometheus :9253
     }
 
