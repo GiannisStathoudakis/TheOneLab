@@ -6,14 +6,35 @@ metadata:
   namespace: kube-system
 data:
   Corefile: |
-    .:53 {
+    cluster.local:53 {
         log
         errors
         cache 30
         reload
         loop
         bind 0.0.0.0
-        forward . 10.43.0.10
+        forward . rke2-coredns-rke2-coredns.kube-system.svc.cluster.local
+        prometheus :9253
+    }
+    
+    kublab.org:53 {
+        log
+        errors
+        cache 30
+        reload
+        loop
+        bind 0.0.0.0
+        forward . rke2-coredns-rke2-coredns.kube-system.svc.cluster.local
+        prometheus :9253
+    }
+
+    .:53 {
+        log
+        errors
+        cache 30
+        reload
+        loop
+        forward . 1.1.1.1 8.8.8.8
         prometheus :9253
     }
 
