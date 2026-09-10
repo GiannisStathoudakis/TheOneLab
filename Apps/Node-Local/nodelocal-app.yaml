@@ -82,7 +82,7 @@ metadata:
 spec:
   redirectFrontend:
     serviceMatcher:
-      serviceName: kube-dns
+      serviceName: rke2-coredns-rke2-coredns
       namespace: kube-system
   redirectBackend:
     localEndpointSelector:
