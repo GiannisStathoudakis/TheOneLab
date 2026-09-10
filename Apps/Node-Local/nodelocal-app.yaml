@@ -75,10 +75,9 @@ spec:
 
 ---
 apiVersion: "cilium.io/v2"
-kind: CiliumLocalRedirectPolicy
+kind: CiliumClusterwideLocalRedirectPolicy
 metadata:
   name: nodelocaldns-ebpf
-  namespace: kube-system
 spec:
   redirectFrontend:
     serviceMatcher:
