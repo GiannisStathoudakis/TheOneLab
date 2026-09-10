@@ -31,6 +31,7 @@ spec:
               backend: s3
               s3:
                 endpoint: garage.garage.svc.cluster.local:3900
+                region: garage
                 bucket_name: mimir-blocks
                 access_key_id: ${AWS_ACCESS_KEY_ID}
                 secret_access_key: ${AWS_SECRET_ACCESS_KEY}
@@ -39,20 +40,22 @@ spec:
               backend: s3
               s3:
                 endpoint: garage.garage.svc.cluster.local:3900
+                region: garage
                 bucket_name: mimir-ruler
                 access_key_id: ${AWS_ACCESS_KEY_ID}
                 secret_access_key: ${AWS_SECRET_ACCESS_KEY}
                 insecure: true
-            alertmanager_storage:
-              backend: s3
-              s3:
-                endpoint: garage.garage.svc.cluster.local:3900
-                bucket_name: mimir-alertmanager
-                access_key_id: ${AWS_ACCESS_KEY_ID}
-                secret_access_key: ${AWS_SECRET_ACCESS_KEY}
-                insecure: true
-            alertmanager:
-              fallback_config_file: /etc/alertmanager-fallback/alertmanager.yaml
+            #alertmanager_storage:
+            #  backend: s3
+            #  s3:
+            #    endpoint: garage.garage.svc.cluster.local:3900
+            #    region: garage
+            #    bucket_name: mimir-alertmanager
+            #    access_key_id: ${AWS_ACCESS_KEY_ID}
+            #    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+            #    insecure: true
+            #alertmanager:
+            #  fallback_config_file: /etc/alertmanager-fallback/alertmanager.yaml
 
         minio:
           enabled: false
@@ -92,18 +95,21 @@ spec:
           replicas: 1
 
         alertmanager:
-          replicas: 1
-          statefulSet:
-            enabled: true
-          fallbackConfig: "" 
-          extraVolumes:
-            - name: alertmanager-fallback
-              secret:
-                secretName: alertmanager-fallback-config
-          extraVolumeMounts:
-            - name: alertmanager-fallback
-              mountPath: /etc/alertmanager-fallback
-              readOnly: true
+          enabled: false
+
+        #alertmanager:
+        #  replicas: 1
+        #  statefulSet:
+        #    enabled: true
+        #  fallbackConfig: "" 
+        #  extraVolumes:
+        #    - name: alertmanager-fallback
+        #      secret:
+        #        secretName: alertmanager-fallback-config
+        #  extraVolumeMounts:
+        #    - name: alertmanager-fallback
+        #      mountPath: /etc/alertmanager-fallback
+        #      readOnly: true
             
         overrides_exporter:
           replicas: 1
