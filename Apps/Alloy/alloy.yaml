@@ -25,7 +25,6 @@ spec:
               port: 4318
               targetPort: 4318
               protocol: TCP
-          # ----------------------
 
           securityContext:
             privileged: true # Required for eBPF and hostPath log tailing
@@ -50,44 +49,7 @@ spec:
           configMap:
             content: |-
               // ==========================================
-              // 1. Kubernetes Nodes (cAdvisor Pod Resource Metrics)
-              // ==========================================
-              discovery.kubernetes "nodes" {
-                role = "node"
-              }
-
-              discovery.relabel "cadvisor" {
-                targets = discovery.kubernetes.nodes.targets
-                rule {
-                  source_labels = ["__meta_kubernetes_node_name"]
-                  regex         = coalesce(env("HOSTNAME"), constants.hostname)
-                  action        = "keep"
-                }
-              }
-
-              prometheus.scrape "cadvisor" {
-                targets             = discovery.relabel.cadvisor.output
-                scheme              = "https"
-                metrics_path        = "/metrics/cadvisor"
-                bearer_token_file   = "/var/run/secrets/kubernetes.io/serviceaccount/token"
-                tls_config {
-                  insecure_skip_verify = true
-                }
-                forward_to = [prometheus.remote_write.mimir.receiver]
-              }
-
-              prometheus.remote_write "mimir" {
-                endpoint {
-                  url = "http://mimir-distributor.mimir.svc.cluster.local:8080/api/v1/push"
-                  
-                  headers = {
-                    "X-Scope-OrgID" = "anonymous",
-                  }
-                }
-              }
-
-              // ==========================================
-              // 2. Loki (Pod Stdout/Stderr Application Logs) - FIXED
+              // 1. Pod Discovery & Split
               // ==========================================
               discovery.kubernetes "pods" {
                 role = "pod"
@@ -97,76 +59,125 @@ spec:
                 }
               }
 
-              discovery.relabel "pod_logs" {
+              // Bucket 1: Infra Pods
+              discovery.relabel "infra_pods" {
                 targets = discovery.kubernetes.pods.targets
-
                 rule {
                   source_labels = ["__meta_kubernetes_namespace"]
-                  target_label  = "namespace"
-                }
-                rule {
-                  source_labels = ["__meta_kubernetes_pod_name"]
-                  target_label  = "pod"
-                }
-                rule {
-                  source_labels = ["__meta_kubernetes_pod_container_name"]
-                  target_label  = "container"
-                }
-                rule {
-                  action = "replace"
-                  source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name", "__meta_kubernetes_pod_label_app", "__meta_kubernetes_pod_container_name"]
-                  separator = ";"
-                  regex = "^(?:;)*([^;]+).*$"
-                  replacement = "$1"
-                  target_label = "service_name"
-                }
-                rule {
-                  source_labels = ["__meta_kubernetes_namespace"]
-                  target_label  = "service_namespace"
+                  regex         = "garage" 
+                  action        = "drop"
                 }
               }
 
-              loki.source.kubernetes "pod_logs" {
-                targets    = discovery.relabel.pod_logs.output
-                forward_to = [loki.process.pod_logs_parse.receiver]
+              // Bucket 2: App Pods
+              discovery.relabel "app_pods" {
+                targets = discovery.kubernetes.pods.targets
+                rule {
+                  source_labels = ["__meta_kubernetes_namespace"]
+                  regex         = "garage"
+                  action        = "keep"
+                }
               }
 
-              loki.process "pod_logs_parse" {
-                forward_to = [loki.write.loki.receiver]
+              // ==========================================
+              // 2. Kubernetes Nodes (cAdvisor Pod Resource Metrics)
+              // ==========================================
+              prometheus.remote_write "mimir_infra" {
+                endpoint {
+                  url = "http://mimir-distributor.mimir.svc.cluster.local:8080/api/v1/push"
+                  headers = { "X-Scope-OrgID" = "infra" }
+                }
+              }
 
+              prometheus.remote_write "mimir_app" {
+                endpoint {
+                  url = "http://mimir-distributor.mimir.svc.cluster.local:8080/api/v1/push"
+                  headers = { "X-Scope-OrgID" = "app" }
+                }
+              }
+
+              discovery.kubernetes "nodes" { role = "node" }
+              discovery.relabel "cadvisor" {
+                targets = discovery.kubernetes.nodes.targets
+                rule {
+                  source_labels = ["__meta_kubernetes_node_name"]
+                  regex         = coalesce(env("HOSTNAME"), constants.hostname)
+                  action        = "keep"
+                }
+              }
+              prometheus.scrape "cadvisor" {
+                targets             = discovery.relabel.cadvisor.output
+                scheme              = "https"
+                metrics_path        = "/metrics/cadvisor"
+                bearer_token_file   = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+                tls_config { insecure_skip_verify = true }
+                forward_to = [prometheus.remote_write.mimir_infra.receiver] 
+              }
+
+              // ==========================================
+              // 3. Loki (Pod Stdout/Stderr Application Logs)
+              // ==========================================
+              
+              // APP LOGS
+              loki.source.kubernetes "app_logs" {
+                targets    = discovery.relabel.app_pods.output
+                forward_to = [loki.process.app_logs_parse.receiver]
+              }
+              loki.process "app_logs_parse" {
+                forward_to = [loki.write.loki_app.receiver]
                 stage.json {
-                  expressions = {
-                    level = "level", 
-                  }
+                  expressions = { level = "level" }
                   drop_malformed = false 
                 }
-
                 stage.regex {
                   expression = "(?i)(?:level=|level: |\\[|\\s|^)(?P<level>info|debug|warn|warning|error|fatal|trace)(?:\\]|\\s|,|:|$)"
                 }
-
                 stage.labels {
-                  values = {
-                    level = "level",
-                  }
+                  values = { level = "level" }
+                }
+              }
+              loki.write "loki_app" {
+                endpoint {
+                  url = "http://loki.loki.svc.cluster.local:3100/loki/api/v1/push"
+                  tenant_id = "app"
                 }
               }
 
-              // ==========================================
-              // 3. Loki (Tetragon eBPF Security Logs)
-              // ==========================================
+              // INFRA LOGS
+              loki.source.kubernetes "infra_logs" {
+                targets    = discovery.relabel.infra_pods.output
+                forward_to = [loki.process.infra_logs_parse.receiver]
+              }
+              loki.process "infra_logs_parse" {
+                forward_to = [loki.write.loki_infra.receiver]
+                stage.json {
+                  expressions = { level = "level" }
+                  drop_malformed = false 
+                }
+                stage.regex {
+                  expression = "(?i)(?:level=|level: |\\[|\\s|^)(?P<level>info|debug|warn|warning|error|fatal|trace)(?:\\]|\\s|,|:|$)"
+                }
+                stage.labels {
+                  values = { level = "level" }
+                }
+              }
+              loki.write "loki_infra" {
+                endpoint {
+                  url = "http://loki.loki.svc.cluster.local:3100/loki/api/v1/push"
+                  tenant_id = "infra"
+                }
+              }
+              
+              // Tetragon Security Logs
               local.file_match "tetragon_logs" {
                 path_targets = [{"__path__" = "/var/log/tetragon/tetragon.log"}]
               }
-
               loki.source.file "tetragon" {
                 targets    = local.file_match.tetragon_logs.targets
                 forward_to = [loki.process.tetragon_parse.receiver]
               }
-
               loki.process "tetragon_parse" {
-                forward_to = [loki.write.loki.receiver]
-
+                forward_to = [loki.write.loki_infra.receiver]
                 stage.json {
                   expressions = {
                     pod       = "process.pod.name",
@@ -175,7 +186,6 @@ spec:
                     binary    = "process.binary",
                   }
                 }
-
                 stage.labels {
                   values = {
                     pod       = "pod",
@@ -187,17 +197,11 @@ spec:
                 }
               }
 
-              loki.write "loki" {
-                endpoint {
-                  url = "http://loki.loki.svc.cluster.local:3100/loki/api/v1/push"
-                }
-              }
-
               // ==========================================
-              // 4. Pyroscope (eBPF Continuous Profiling)
+              // 4. Pyroscope (Continuous Profiling)
               // ==========================================
               pyroscope.ebpf "default" {
-                targets    = discovery.relabel.pod_logs.output
+                targets    = discovery.relabel.app_pods.output
                 forward_to = [pyroscope.write.pyroscope.receiver]
               }
 
@@ -222,21 +226,19 @@ spec:
               otelcol.processor.batch "default" {
                 output {
                   traces  = [otelcol.exporter.otlp.tempo.input]
-                  metrics = [otelcol.exporter.prometheus.to_mimir.input]
+                  metrics = [otelcol.exporter.prometheus.to_mimir_app.input] 
                 }
               }
 
               otelcol.exporter.otlp "tempo" {
                 client {
                   endpoint = "tempo.tempo.svc.cluster.local:4317"
-                  tls {
-                    insecure = true
-                  }
+                  tls { insecure = true }
                 }
               }
 
-              otelcol.exporter.prometheus "to_mimir" {
-                forward_to = [prometheus.remote_write.mimir.receiver]
+              otelcol.exporter.prometheus "to_mimir_app" {
+                forward_to = [prometheus.remote_write.mimir_app.receiver]
               }
 
               // ==========================================
@@ -248,19 +250,16 @@ spec:
 
               discovery.relabel "annotated_endpoints" {
                 targets = discovery.kubernetes.endpoints.targets
-
                 rule {
                   source_labels = ["__meta_kubernetes_service_annotation_prometheus_io_scrape"]
                   regex         = "true"
                   action        = "keep"
                 }
-                
                 rule {
                   source_labels = ["__meta_kubernetes_endpoint_node_name"]
                   regex         = coalesce(env("HOSTNAME"), constants.hostname)
                   action        = "keep"
                 }
-
                 rule {
                   source_labels = ["__address__", "__meta_kubernetes_service_annotation_prometheus_io_port"]
                   action        = "replace"
@@ -268,13 +267,11 @@ spec:
                   replacement   = "$1:$2"
                   target_label  = "__address__"
                 }
-
                 rule {
                   source_labels = ["__meta_kubernetes_service_name"]
                   action        = "replace"
                   target_label  = "job"
                 }
-
                 rule {
                   source_labels = ["__meta_kubernetes_namespace"]
                   action        = "replace"
@@ -284,7 +281,7 @@ spec:
 
               prometheus.scrape "annotated_endpoints" {
                 targets    = discovery.relabel.annotated_endpoints.output
-                forward_to = [prometheus.remote_write.mimir.receiver]
+                forward_to = [prometheus.remote_write.mimir_infra.receiver]
               }
 
   destination:

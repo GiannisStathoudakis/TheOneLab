@@ -21,7 +21,7 @@ spec:
           data:
             discovery:
               services:
-                - k8s_namespace: "."
+                - k8s_namespace: "garage"
                 
             attributes:
               kubernetes:
