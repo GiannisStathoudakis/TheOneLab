@@ -1,0 +1,99 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-local-dns-ebpf
+  namespace: kube-system
+data:
+  Corefile: |
+    .:53 {
+        errors
+        cache 30
+        reload
+        loop
+        bind 0.0.0.0
+        forward . kube-dns.kube-system.svc.cluster.local {
+            force_tcp
+        }
+        prometheus :9253
+    }
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: node-local-dns-ebpf
+  namespace: kube-system
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-local-dns-ebpf
+  namespace: kube-system
+  labels:
+    k8s-app: node-local-dns-ebpf
+spec:
+  selector:
+    matchLabels:
+      k8s-app: node-local-dns-ebpf
+  template:
+    metadata:
+      labels:
+        k8s-app: node-local-dns-ebpf
+    spec:
+      serviceAccountName: node-local-dns-ebpf
+      containers:
+      - name: coredns-cache
+        image: registry.k8s.io/coredns/coredns:v1.14.6
+        args: [ "-conf", "/etc/Corefile" ]
+        ports:
+        - containerPort: 53
+          name: dns
+          protocol: UDP
+        - containerPort: 53
+          name: dns-tcp
+          protocol: TCP
+        - containerPort: 9253
+          name: metrics
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
+        volumeMounts:
+        - mountPath: /etc/Corefile
+          name: config-volume
+          subPath: Corefile
+      volumes:
+      - name: config-volume
+        configMap:
+          name: node-local-dns-ebpf
+          items:
+          - key: Corefile
+            path: Corefile
+
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumLocalRedirectPolicy
+metadata:
+  name: nodelocaldns-ebpf
+  namespace: kube-system
+spec:
+  redirectFrontend:
+    serviceMatcher:
+      serviceName: kube-dns
+      namespace: kube-system
+  redirectBackend:
+    localEndpointSelector:
+      matchLabels:
+        k8s-app: node-local-dns-ebpf
+    toPorts:
+      - port: "53"
+        name: dns
+        protocol: UDP
+      - port: "53"
+        name: dns-tcp
+        protocol: TCP
