@@ -306,18 +306,6 @@ spec:
                   action        = "replace"
                   target_label  = "namespace"
                 }
-                rule {
-                  source_labels = ["__meta_kubernetes_namespace"]
-                  target_label  = "service_namespace"
-                }
-                rule {
-                  source_labels = ["__meta_kubernetes_endpoint_node_name"]
-                  target_label  = "node"
-                }
-                rule {
-                  source_labels = ["__meta_kubernetes_endpoint_node_name"]
-                  target_label  = "instance"
-                }
               }
 
               prometheus.scrape "annotated_endpoints" {
