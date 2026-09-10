@@ -18,9 +18,9 @@ spec:
         hostFirewall:
           enabled: true
         
-        l7Proxy: false
+        l7Proxy: true
         envoy:
-          enabled: false
+          enabled: true
 
         encryption:
           enabled: true
