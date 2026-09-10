@@ -19,7 +19,7 @@ spec:
         deploymentMode: Monolithic
         
         loki:
-          auth_enabled: false
+          auth_enabled: true
           
           compactor:
             working_directory: /var/loki/compactor
