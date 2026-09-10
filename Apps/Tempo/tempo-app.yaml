@@ -29,6 +29,7 @@ spec:
               s3:
                 bucket: tempo-traces
                 endpoint: garage.garage.svc.cluster.local:3900
+                region: garage
                 insecure: true
                 forcepathstyle: true
         
