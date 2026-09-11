@@ -13,7 +13,7 @@ data:
         reload
         loop
         bind 0.0.0.0
-        forward . rke2-coredns-rke2-coredns.kube-system.svc.cluster.local
+        forward . {$RKE2_COREDNS_RKE2_COREDNS_SERVICE_HOST}
         prometheus :9253
     }
     
@@ -24,7 +24,7 @@ data:
         reload
         loop
         bind 0.0.0.0
-        forward . rke2-coredns-rke2-coredns.kube-system.svc.cluster.local
+        forward . {$RKE2_COREDNS_RKE2_COREDNS_SERVICE_HOST}
         prometheus :9253
     }
 
