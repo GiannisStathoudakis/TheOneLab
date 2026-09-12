@@ -17,7 +17,7 @@ spec:
   selector:
     app.kubernetes.io/instance: rke2-coredns
     app.kubernetes.io/name: rke2-coredns
-    
+
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -58,7 +58,9 @@ data:
       cache 30
       reload
       loop
-      forward . /etc/resolv.conf
+      forward . {$RKE2_COREDNS_UPSTREAM_SERVICE_HOST} {
+        force_tcp
+      }
       prometheus :9253
     }
 
