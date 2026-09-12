@@ -1,5 +1,25 @@
 ---
 apiVersion: v1
+kind: Service
+metadata:
+  name: rke2-coredns-upstream
+  namespace: kube-system
+spec:
+  ports:
+  - name: udp-53
+    port: 53
+    protocol: UDP
+    targetPort: 53
+  - name: tcp-53
+    port: 53
+    protocol: TCP
+    targetPort: 53
+  selector:
+    app.kubernetes.io/instance: rke2-coredns
+    app.kubernetes.io/name: rke2-coredns
+
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: node-local-dns-ebpf
@@ -13,7 +33,7 @@ data:
       reload
       loop
       bind 0.0.0.0
-      forward . {$RKE2_COREDNS_RKE2_COREDNS_SERVICE_HOST} {
+      forward . {$RKE2_COREDNS_UPSTREAM_SERVICE_HOST} {
         force_tcp
       }
       prometheus :9253
@@ -26,7 +46,7 @@ data:
       reload
       loop
       bind 0.0.0.0
-      forward . {$RKE2_COREDNS_RKE2_COREDNS_SERVICE_HOST} {
+      forward . {$RKE2_COREDNS_UPSTREAM_SERVICE_HOST} {
         force_tcp
       }
       prometheus :9253
