@@ -58,9 +58,7 @@ data:
       cache 30
       reload
       loop
-      forward . {$RKE2_COREDNS_UPSTREAM_SERVICE_HOST} {
-        force_tcp
-      }
+      forward . {$RKE2_COREDNS_UPSTREAM_SERVICE_HOST}
       prometheus :9253
     }
 
