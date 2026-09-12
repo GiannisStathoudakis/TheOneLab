@@ -121,3 +121,4 @@ spec:
       - port: "53"
         name: dns-tcp
         protocol: TCP
+  skipRedirectFromBackend: true
