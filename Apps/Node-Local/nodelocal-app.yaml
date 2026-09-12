@@ -100,7 +100,7 @@ spec:
             path: Corefile
 
 ---
-apiVersion: "cilium.io/v2"
+apiVersion: cilium.io/v2
 kind: CiliumLocalRedirectPolicy
 metadata:
   name: nodelocaldns-ebpf
@@ -115,10 +115,10 @@ spec:
       matchLabels:
         k8s-app: node-local-dns-ebpf
     toPorts:
-      - port: "53"
-        name: dns
+      - name: udp-53
+        port: "53"
         protocol: UDP
-      - port: "53"
-        name: dns-tcp
+      - name: tcp-53
+        port: "53"
         protocol: TCP
   skipRedirectFromBackend: true
