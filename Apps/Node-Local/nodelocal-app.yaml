@@ -15,8 +15,7 @@ spec:
     protocol: TCP
     targetPort: 53
   selector:
-    app.kubernetes.io/instance: rke2-coredns
-    app.kubernetes.io/name: rke2-coredns
+    k8s-app: kube-dns
 
 ---
 apiVersion: v1
@@ -54,7 +53,8 @@ data:
       cache 30
       reload
       loop
-      forward . 10.17.3.1 1.1.1.1 8.8.8.8
+      bind 0.0.0.0
+      forward . {$RKE2_COREDNS_UPSTREAM_SERVICE_HOST}
       prometheus :9253
     }
 
