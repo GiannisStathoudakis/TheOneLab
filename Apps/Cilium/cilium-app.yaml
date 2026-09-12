@@ -16,8 +16,8 @@ spec:
         k8sServiceHost: "127.0.0.1"
         k8sServicePort: 6443
         
-        bpf:
-          lbSock: true
+        socketLB:
+          enabled: true
           
         hostFirewall:
           enabled: true
