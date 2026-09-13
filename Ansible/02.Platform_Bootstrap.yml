@@ -13,28 +13,62 @@
         state: present
         update_cache: yes
 
-    - name: 02. Install Local Path Provisioner
-      kubernetes.core.k8s:
-        state: present
-        src: https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.36/deploy/local-path-storage.yaml
+    - name: 02. Add OpenEBS Helm Repository
+      kubernetes.core.helm_repository:
+        name: openebs
+        repo_url: https://openebs.github.io/openebs
 
-    - name: 03. Make local-path the default StorageClass
+    - name: 03. Install OpenEBS via Helm (GitOps Aligned)
+      kubernetes.core.helm:
+        name: openebs
+        chart_ref: openebs/openebs
+        chart_version: "4.5.1"
+        release_namespace: openebs
+        create_namespace: true
+        state: present
+        values:
+          engines:
+            local:
+              lvm:
+                enabled: true
+              zfs:
+                enabled: false
+              rawfile:
+                enabled: false
+              hostpath:
+                enabled: false
+            replicated:
+              mayastor:
+                enabled: false
+          lvm-localpv:
+            nodeSelector:
+              node-role.kubernetes.io/control-plane: "true"
+          loki:
+            enabled: false
+          alloy:
+            enabled: false
+      
+    - name: 04. Create default StorageClass for OpenEBS LVM
       kubernetes.core.k8s:
         state: present
         definition:
           apiVersion: storage.k8s.io/v1
           kind: StorageClass
           metadata:
-            name: local-path
+            name: openebs-lvm
             annotations:
               storageclass.kubernetes.io/is-default-class: "true"
+          provisioner: local.csi.openebs.io
+          parameters:
+            storage: "lvm"
+            volgroup: "lvmvg"
     
-    - name: 04. Install gateway-api
+    - name: 05. Install gateway-api
       kubernetes.core.k8s:
         state: present
         src: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.0/experimental-install.yaml
 
-    - name: 05. Copy CoreDNS HelmChartConfig to RKE2 Manifests
+    - name: 06. Copy CoreDNS HelmChartConfig to RKE2 Manifests
       become: true
       ansible.builtin.copy:
         src: files/configure-coredns.yaml
@@ -43,11 +77,11 @@
         group: root
         mode: '0644'
 
-    - name: 06. Force CoreDNS to reload configuration immediately
+    - name: 07. Force CoreDNS to reload configuration immediately
       ansible.builtin.shell: kubectl rollout restart deployment rke2-coredns-rke2-coredns -n kube-system
       changed_when: true
 
-    - name: 07. Add Helm Repositories (Cilium & ArgoCD)
+    - name: 08. Add Helm Repositories (Cilium & ArgoCD)
       kubernetes.core.helm_repository:
         name: "{{ item.name }}"
         repo_url: "{{ item.url }}"
@@ -55,10 +89,11 @@
         - { name: 'cilium', url: 'https://helm.cilium.io/' }
         - { name: 'argo', url: 'https://argoproj.github.io/argo-helm' }
 
-    - name: 08. Install Cilium CNI via Helm
+    - name: 09. Install Cilium CNI via Helm
       kubernetes.core.helm:
         name: cilium
         chart_ref: cilium/cilium
+        chart_version: "1.19.5"
         release_namespace: kube-system
         state: present
         wait: true
@@ -73,33 +108,34 @@
             enabled: true
             type: wireguard
     
-    - name: 09. Create Argo CD namespace
+    - name: 10. Create Argo CD namespace
       kubernetes.core.k8s:
         name: argocd
         api_version: v1
         kind: Namespace
         state: present
 
-    - name: 10. Install Argo CD via Helm
+    - name: 11. Install Argo CD via Helm
       kubernetes.core.helm:
         name: argocd
         chart_ref: argo/argo-cd
+        chart_version: "10.1.2"
         release_namespace: argocd
         state: present
         wait: true
 
-    - name: 11. Retrieve Argo CD initial admin password
+    - name: 12. Retrieve Argo CD initial admin password
       kubernetes.core.k8s_info:
         kind: Secret
         name: argocd-initial-admin-secret
         namespace: argocd
       register: argocd_secret
 
-    - name: 12. Print Argo CD password
+    - name: 13. Print Argo CD password
       ansible.builtin.debug:
         msg: "Argo CD Password: {{ argocd_secret.resources[0].data.password | b64decode }}"
 
-    - name: 13. Add Private GitHub Repository to Argo CD
+    - name: 14. Add Private GitHub Repository to Argo CD
       kubernetes.core.k8s:
         state: present
         definition:
@@ -117,7 +153,7 @@
             project: "default"
             sshPrivateKey: "{{ github_ssh_private_key }}"
     
-    - name: 14. Trigger GitOps Apply Root Application
+    - name: 15. Trigger GitOps Apply Root Application
       kubernetes.core.k8s:
         state: present
         src: "https://raw.githubusercontent.com/GiannisStathoudakis/TheOneLab/main/Bootstrap/root.yaml?v=3"
