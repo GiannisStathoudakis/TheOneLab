@@ -5,7 +5,10 @@ metadata:
   labels:
     # Block root users, privilege escalation, etc.
     pod-security.kubernetes.io/enforce: restricted
-    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/enforce-version: latest 
     # Warning if someone even tries
     pod-security.kubernetes.io/warn: restricted
     pod-security.kubernetes.io/warn-version: latest
+
+# Future self reminder: 'latest' works perfectly with our Blue/Green upgrade strategy. 
+# If you ever decide to do in-place upgrades, make sure to hardcode the Kubernetes version to prevent unexpected breakages.
