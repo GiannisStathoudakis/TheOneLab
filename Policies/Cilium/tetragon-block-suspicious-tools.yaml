@@ -1,0 +1,45 @@
+#Anti-Hacker examples
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicyNamespaced
+metadata:
+  name: block-suspicious-activity
+  namespace: my-apps-namespace
+spec:
+  kprobes:
+  #Block -i in shell
+  - call: "sys_execve"
+    syscall: true
+    message: "Security Alert: Interactive Reverse Shell blocked!"
+    selectors:
+    - matchArgs:
+      - index: 0
+        operator: "Equal"
+        values:
+        - "/bin/bash"
+        - "/bin/sh"
+      - index: 1
+        operator: "Equal"
+        values:
+        - "-i"
+      matchActions:
+      - action: Sigkill
+  #Block downloading tools, netcat & privilege escalation
+  - call: "sys_execve"
+    syscall: true
+    message: "Security Alert: Suspicious binary execution blocked!"
+    selectors:
+    - matchArgs:
+      - index: 0
+        operator: "Equal"
+        values:
+        - "/usr/bin/curl"
+        - "/usr/bin/wget"
+        - "/usr/bin/nc"
+        - "/bin/nc"
+        - "/usr/bin/sudo"
+        - "/usr/bin/apt"
+        - "/sbin/apk"
+        - "/usr/bin/yum"
+        - "/usr/bin/dnf"
+      matchActions:
+      - action: Sigkill
