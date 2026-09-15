@@ -1,0 +1,31 @@
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicyNamespaced
+metadata:
+  name: detect-all-spontaneous-egress
+  namespace: my-apps-namespace
+spec:
+  kprobes:
+  
+  #Catch TCP (IPv4 & IPv6) communication to the outside
+  - call: "tcp_connect"
+    syscall: false
+    message: "Security Alert: Spontaneous TCP IPv4 connection detected!"
+  - call: "tcp_v6_connect"
+    syscall: false
+    message: "Security Alert: Spontaneous TCP IPv6 connection detected!"
+    
+  #Catch UDP (IPv4 & IPv6) communication to the outside
+  - call: "udp_sendmsg"
+    syscall: false
+    message: "Security Alert: Spontaneous UDP IPv4 packet detected!"
+  - call: "udpv6_sendmsg"
+    syscall: false
+    message: "Security Alert: Spontaneous UDP IPv6 packet detected!"
+
+  #Catch Raw Sockets (IPv4 & IPv6) communication to the outside
+  - call: "raw_sendmsg"
+    syscall: false
+    message: "Security Alert: Spontaneous RAW/ICMP IPv4 packet detected!"
+  - call: "rawv6_sendmsg"
+    syscall: false
+    message: "Security Alert: Spontaneous RAW/ICMP IPv6 packet detected!"
