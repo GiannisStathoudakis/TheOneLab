@@ -1,0 +1,32 @@
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicyNamespaced
+metadata:
+  name: block-enumeration-tools
+  namespace: my-apps-namespace
+spec:
+  kprobes:
+  - call: "sys_execve"
+    syscall: true
+    message: "Security Alert: System Enumeration & Reconnaissance blocked!"
+    selectors:
+    - matchArgs:
+      - index: 0
+        operator: "Equal"
+        values:
+        # User/Group Enumeration
+        - "/usr/bin/whoami"
+        - "/usr/bin/id"
+        - "/usr/bin/w"
+        - "/usr/bin/getent"
+        # System/OS Enumeration
+        - "/usr/bin/uname"
+        - "/usr/bin/lscpu"
+        - "/usr/bin/lsblk"
+        - "/usr/bin/hostname"
+        # Network Enumeration
+        - "/sbin/ip"
+        - "/sbin/ifconfig"
+        - "/sbin/arp"
+        - "/sbin/route"
+      matchActions:
+      - action: Sigkill
