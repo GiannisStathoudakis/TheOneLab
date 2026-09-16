@@ -18,6 +18,11 @@ spec:
         tetragon:
           exportFilename: "tetragon.log"
           
+          exportFileMaxSizeMB: 50
+          exportFileMaxBackups: 5
+          exportFileMaxAge: 3
+          exportFileCompress: true
+          
           exportFilePerm: "644"
           
           enableK8sAPI: true
