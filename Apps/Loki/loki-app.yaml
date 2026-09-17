@@ -32,7 +32,7 @@ spec:
           limits_config:
             retention_period: 8760h 
             retention_stream:
-              - selector: '{level="info"}'
+              - selector: '{level=~"info|debug|trace"}'
                 priority: 1
                 period: 696h
               
