@@ -32,7 +32,7 @@ spec:
           
           exportDenyList: |-
             {"health_check":true}
-            {"namespace":["", "cilium", "kube-system"]}
+            {"namespace":["", "kube-system"]}
 
           prometheus:
             enabled: true
