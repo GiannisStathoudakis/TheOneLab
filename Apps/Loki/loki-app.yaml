@@ -34,7 +34,7 @@ spec:
             retention_stream:
               - selector: '{level=~"info|debug|trace"}'
                 priority: 1
-                period: 696h
+                period: 336h
               
               - selector: '{log_type="tetragon_security"}'
                 priority: 2
