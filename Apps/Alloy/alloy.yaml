@@ -340,6 +340,20 @@ spec:
                 }
               }
 
+              // ==========================================
+              // 8. Host/Node Metrics (Embedded Node Exporter)
+              // ==========================================
+              prometheus.exporter.unix "host" {
+                procfs_path = "/proc"
+                sysfs_path  = "/sys"
+                rootfs_path = "/"
+              }
+
+              prometheus.scrape "host_metrics" {
+                targets    = prometheus.exporter.unix.host.targets
+                forward_to = [prometheus.remote_write.mimir_infra.receiver]
+              }
+
   destination:
     server: https://kubernetes.default.svc
     namespace: grafana
