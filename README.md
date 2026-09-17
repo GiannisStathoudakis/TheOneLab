@@ -67,13 +67,12 @@ If given a cloud budget, the target architecture shifts from a "Stateful Monolit
 | Component | Role |
 | :--- | :--- |
 | **Grafana** | Unified dashboard visualization, Alerting and APM UI |
-| **Grafana Alloy** | Primary telemetry pipeline featuring **Intelligent Multi-Tenancy Routing** and **Native eBPF Auto-Instrumentation (Beyla)**. It dynamically splits telemetry into distinct 'App' and 'Infra' tenants at the edge, and utilizes OTel filter processors to proactively drop high-cardinality noise (e.g., `/health` and `/metrics` traces) before they reach the backend TSDBs. |
+| **Grafana Alloy** | Primary telemetry pipeline acting as a **Unified Agent**. It features **Intelligent Multi-Tenancy Routing**, **Embedded Host Metrics**, and **Native eBPF Auto-Instrumentation (Beyla)**. It dynamically splits telemetry into distinct 'App' and 'Infra' tenants at the edge, and utilizes OTel filter processors to proactively drop high-cardinality noise (e.g., `/health` and `/metrics` traces) before they reach the backend TSDBs. |
 | **Grafana Mimir** | Horizontally scalable, highly available time-series metrics database *(FinOps optimized: S3-backed storage)* |
 | **Loki** | Log aggregation and querying *(FinOps optimized: S3-backed storage with dynamic retention stream-selectors)* |
 | **Tempo** | Distributed tracing backend with active Metrics-Generator *(FinOps optimized: S3-backed with strict 7-day retention)* |
 | **Robusta KRR** | *(Planned)* Kubernetes Resource Recommender for compute right-sizing and minimizing idle over-provisioning |
 | **Pyroscope** | Continuous application profiling backend |
-| **Node Exporter** | Host-level hardware and OS metric collector |
 | **Hubble** | Network and service communication flow observability (via Cilium) |
 
 ---
