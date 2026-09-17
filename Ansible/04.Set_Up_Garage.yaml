@@ -11,12 +11,17 @@
       register: garage_node_id
       changed_when: false
 
-    - name: 02. Assign storage capacity to the Node
+    - name: 02a. Check current Garage Layout status
+      ansible.builtin.shell: kubectl exec -n garage garage-0 -- ./garage layout show
+      register: garage_layout
+      changed_when: false
+
+    - name: 02b. Assign storage capacity to the Node
       ansible.builtin.command: >
         kubectl exec -n garage garage-0 -- ./garage layout assign {{ garage_node_id.stdout }} --zone dc1 --capacity 20G
       register: layout_assign
       changed_when: "'Assigning' in layout_assign.stdout"
-      ignore_errors: true
+      when: "garage_node_id.stdout not in garage_layout.stdout"
 
     - name: 03. Apply the storage layout
       ansible.builtin.command: "kubectl exec -n garage garage-0 -- ./garage layout apply --version 1"
@@ -25,8 +30,14 @@
       until: layout_apply.rc == 0
       retries: 5
       delay: 5
+      when: layout_assign.changed
 
-    - name: 04. Create S3 Buckets for the Grafana Stack
+    - name: 04a. Gather list of existing S3 Buckets
+      ansible.builtin.command: "kubectl exec -n garage garage-0 -- ./garage bucket list"
+      register: existing_buckets
+      changed_when: false
+
+    - name: 04b. Create S3 Buckets conditionally
       ansible.builtin.command: "kubectl exec -n garage garage-0 -- ./garage bucket create {{ item }}"
       loop:
         - loki-logs
@@ -37,9 +48,14 @@
         - mimir-alertmanager
       register: bucket_creation
       changed_when: "'created' in bucket_creation.stdout | lower"
-      ignore_errors: true
+      when: "item not in existing_buckets.stdout"
 
-    - name: 05. Generate S3 API Keys
+    - name: 05a. Gather list of existing S3 API Keys
+      ansible.builtin.command: "kubectl exec -n garage garage-0 -- ./garage key list"
+      register: existing_keys
+      changed_when: false
+
+    - name: 05b. Generate S3 API Keys conditionally
       ansible.builtin.command: "kubectl exec -n garage garage-0 -- ./garage key create {{ item }}-key"
       loop:
         - loki
@@ -48,7 +64,7 @@
         - mimir
       register: api_keys
       changed_when: "'Secret key' in api_keys.stdout"
-      ignore_errors: true
+      when: "(item + '-key') not in existing_keys.stdout"
 
     - name: 06. Grant API Keys access to their respective buckets
       ansible.builtin.command: >
@@ -61,9 +77,8 @@
         - { bucket: 'mimir-ruler', key: 'mimir' }
         - { bucket: 'mimir-alertmanager', key: 'mimir' }
       changed_when: false
-      ignore_errors: true
 
-    - name: 07. Save Keys directly to Vault
+    - name: 07. Save Keys directly to Vault (Only on creation)
       ansible.builtin.shell: |
         ACCESS_KEY=$(echo "$GARAGE_STDOUT" | grep 'Key ID:' | awk '{print $3}' | tr -d '\r\n')
         SECRET_KEY=$(echo "$GARAGE_STDOUT" | grep 'Secret key:' | awk '{print $3}' | tr -d '\r\n')
@@ -73,5 +88,5 @@
         GARAGE_STDOUT: "{{ item.stdout | default('') }}"
         VAULT_TOKEN: "{{ root_token }}" 
       loop: "{{ api_keys.results }}"
-      when: item.stdout is defined and 'Secret key' in item.stdout
+      when: item.changed and item.stdout is defined and 'Secret key' in item.stdout
       no_log: true

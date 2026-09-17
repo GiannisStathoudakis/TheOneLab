@@ -10,26 +10,25 @@
         {{ lookup('file', 'files/vault-init.sh') }}
         EOF
       register: vault_setup_output
+      no_log: true
 
-    - name: 02. Print Vault initialization output
-      ansible.builtin.debug:
-        var: vault_setup_output.stdout_lines
-
-    - name: 03. Read cluster-keys.json from Pod
+    - name: 02. Read cluster-keys.json from Pod
       ansible.builtin.shell: |
         kubectl exec vault-0 -n vault -- cat /tmp/cluster-keys.json
       register: vault_keys_output
       failed_when: false
+      no_log: true
 
-    - name: 04. Save cluster keys locally in playbook directory
+    - name: 03. Save cluster keys locally in playbook directory
       ansible.builtin.copy:
         content: "{{ vault_keys_output.stdout }}"
         dest: "{{ playbook_dir }}/files/cluster-keys.json"
         mode: '0600'
       delegate_to: localhost
       when: vault_keys_output.rc == 0 and vault_keys_output.stdout != ""
+      no_log: true
 
-    - name: 05. Clean up sensitive files from Pod
+    - name: 04. Clean up sensitive files from Pod
       ansible.builtin.shell: |
         kubectl exec vault-0 -n vault -- rm -f /tmp/cluster-keys.json /tmp/eso-policy.hcl
       failed_when: false
