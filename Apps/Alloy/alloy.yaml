@@ -328,6 +328,18 @@ spec:
                 forward_to = [prometheus.remote_write.mimir_infra.receiver]
               }
 
+              // ==========================================
+              // 7. eBPF Auto-Instrumentation
+              // ==========================================
+              beyla.ebpf "auto_instrumentation" {
+                targets = discovery.relabel.app_pods.output
+                
+                output {
+                  traces  = [otelcol.processor.filter.drop_noise.input]
+                  metrics = [otelcol.processor.batch.default.input]
+                }
+              }
+
   destination:
     server: https://kubernetes.default.svc
     namespace: grafana
