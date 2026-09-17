@@ -4,6 +4,24 @@ variable "vm_password" {
   sensitive   = true
 }
 
+variable "master_pool_path" {
+  description = "The absolute path on the host for the master KVM storage pool"
+  type        = string
+  default     = "/mnt/s/kvm_master"
+}
+
+variable "worker_pool_path" {
+  description = "The absolute path on the host for the worker KVM storage pool"
+  type        = string
+  default     = "/mnt/h/kvm_worker"
+}
+
+variable "ssh_public_key_path" {
+  description = "Path to the public SSH key for Ansible injection"
+  type        = string
+  default     = "~/.ssh/ansible.pub"
+}
+
 ###############################################
 #Provider Setup
 ###############################################
@@ -40,13 +58,13 @@ provider "libvirt" {
 resource "libvirt_pool" "master_pool" {
   name = "master_pool"
   type = "dir"
-  path = "/mnt/s/kvm_master" 
+  path = var.master_pool_path 
 }
 
 resource "libvirt_pool" "worker_pool" {
   name = "worker_pool"
   type = "dir"
-  path = "/mnt/h/kvm_worker"
+  path = var.worker_pool_path
 }
 
 ###############################################
@@ -99,7 +117,7 @@ resource "libvirt_cloudinit_disk" "commoninit_master" {
   user_data = templatefile("${path.module}/cloud_init.tftpl", {
     admin_password = var.vm_password
     hostname       = "master"
-    pub_key        = file(pathexpand("~/.ssh/ansible.pub"))
+    pub_key        = file(pathexpand(var.ssh_public_key_path))
   })
 }
 
@@ -109,7 +127,7 @@ resource "libvirt_cloudinit_disk" "commoninit_worker" {
   user_data = templatefile("${path.module}/cloud_init.tftpl", {
     admin_password = var.vm_password
     hostname       = "worker"
-    pub_key        = file(pathexpand("~/.ssh/ansible.pub"))
+    pub_key        = file(pathexpand(var.ssh_public_key_path))
   })
 }
 
