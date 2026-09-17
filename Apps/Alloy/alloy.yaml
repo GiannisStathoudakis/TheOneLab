@@ -247,8 +247,23 @@ spec:
                 grpc { endpoint = "0.0.0.0:4317" }
                 http { endpoint = "0.0.0.0:4318" }
                 output {
-                  traces  = [otelcol.processor.batch.default.input]
+                  traces  = [otelcol.processor.filter.drop_noise.input]
                   metrics = [otelcol.processor.batch.default.input]
+                }
+              }
+
+              otelcol.processor.filter "drop_noise" {
+                error_mode = "ignore"
+                traces {
+                  span = [
+                    'attributes["http.target"] == "/health"',
+                    'attributes["http.target"] == "/metrics"',
+                    'attributes["http.target"] == "/ready"',
+                    'attributes["http.route"] == "/healthz"'
+                  ]
+                }
+                output {
+                  traces = [otelcol.processor.batch.default.input]
                 }
               }
 
