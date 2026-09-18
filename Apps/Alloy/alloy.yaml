@@ -36,15 +36,35 @@ spec:
               resources: ["pods", "pods/log", "nodes", "nodes/proxy", "nodes/metrics", "services", "endpoints"]
               verbs: ["get", "list", "watch"]
 
-          # Mount Tetragon host log directory into Alloy
+          # Mount Tetragon host log directory and Host Filesystem for Node Exporter
           extraVolumes:
             - name: tetragon-logs
               hostPath:
                 path: /var/run/cilium/tetragon
+            - name: host-proc
+              hostPath:
+                path: /proc
+            - name: host-sys
+              hostPath:
+                path: /sys
+            - name: host-root
+              hostPath:
+                path: /
+
           extraVolumeMounts:
             - name: tetragon-logs
               mountPath: /var/log/tetragon
               readOnly: true
+            - name: host-proc
+              mountPath: /host/proc
+              readOnly: true
+            - name: host-sys
+              mountPath: /host/sys
+              readOnly: true
+            - name: host-root
+              mountPath: /host/root
+              readOnly: true
+              mountPropagation: HostToContainer
 
           configMap:
             content: |-
@@ -159,7 +179,7 @@ spec:
                   drop_malformed = false 
                 }
                 stage.regex {
-                  expression = "(?i)(?:level=|level: |\\[|\\s|^)(?P<level>info|debug|warn|warning|error|fatal|trace)(?:\\]|\\s|,|:|$)"
+                  expression = "(?i)(?:level=|level: |\\[\vert{}\\s\vert{}^)(?P<level>info\vert{}debug\vert{}warn\vert{}warning\vert{}error\vert{}fatal\vert{}trace)(?:\\]|\\s|,|:|$)"
                 }
                 stage.labels {
                   values = { level = "level" }
@@ -184,7 +204,7 @@ spec:
                   drop_malformed = false 
                 }
                 stage.regex {
-                  expression = "(?i)(?:level=|level: |\\[|\\s|^)(?P<level>info|debug|warn|warning|error|fatal|trace)(?:\\]|\\s|,|:|$)"
+                  expression = "(?i)(?:level=|level: |\\[\vert{}\\s\vert{}^)(?P<level>info\vert{}debug\vert{}warn\vert{}warning\vert{}error\vert{}fatal\vert{}trace)(?:\\]|\\s|,|:|$)"
                 }
                 stage.labels {
                   values = { level = "level" }
@@ -365,9 +385,9 @@ spec:
               // 8. Host/Node Metrics (Embedded Node Exporter)
               // ==========================================
               prometheus.exporter.unix "host" {
-                procfs_path = "/proc"
-                sysfs_path  = "/sys"
-                rootfs_path = "/"
+                procfs_path = "/host/proc"
+                sysfs_path  = "/host/sys"
+                rootfs_path = "/host/root"
               }
 
               prometheus.scrape "host_metrics" {
