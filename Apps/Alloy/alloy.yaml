@@ -282,7 +282,26 @@ spec:
               }
 
               otelcol.exporter.prometheus "to_mimir_app" {
+                forward_to = [prometheus.relabel.beyla_fix.receiver]
+                resource_to_telemetry_conversion = true
+              }
+              prometheus.relabel "beyla_fix" {
                 forward_to = [prometheus.remote_write.mimir_app.receiver]
+                rule {
+                  action = "replace"
+                  source_labels = ["k8s_namespace_name"]
+                  target_label  = "namespace"
+                }
+                rule {
+                  action = "replace"
+                  source_labels = ["k8s_pod_name"]
+                  target_label  = "pod"
+                }
+                rule {
+                  action = "replace"
+                  source_labels = ["k8s_container_name"]
+                  target_label  = "container"
+                }
               }
 
               // ==========================================
