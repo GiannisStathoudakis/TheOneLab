@@ -248,7 +248,7 @@ spec:
                 http { endpoint = "0.0.0.0:4318" }
                 output {
                   traces  = [otelcol.processor.filter.drop_noise.input]
-                  metrics = [otelcol.processor.batch.default.input]
+                  metrics = [otelcol.processor.transform.add_namespace.input]
                 }
               }
 
@@ -264,6 +264,21 @@ spec:
                 }
                 output {
                   traces = [otelcol.processor.batch.default.input]
+                }
+              }
+
+              otelcol.processor.transform "add_namespace" {
+                error_mode = "ignore"
+                metric_statements {
+                  context = "datapoint"
+                  statements = [
+                    `set(attributes["namespace"], resource.attributes["k8s.namespace.name"])`,
+                    `set(attributes["pod"], resource.attributes["k8s.pod.name"])`,
+                    `set(attributes["container"], resource.attributes["k8s.container.name"])`
+                  ]
+                }
+                output {
+                  metrics = [otelcol.processor.batch.default.input]
                 }
               }
 
