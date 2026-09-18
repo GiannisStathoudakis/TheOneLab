@@ -179,8 +179,7 @@ spec:
                   drop_malformed = false 
                 }
                 stage.regex {
-                  expression = "(?i)(?:level=|level: |\\[\vert{}\\s\vert{}^)(?P<level>info\vert{}debug\vert{}warn\vert{}warning\vert{}error\vert{}fatal\vert{}trace)(?:\\]|\\s|,|:|$)"
-                }
+                  expression = "(?i)(?:level=|level: |\\[|\\s|^)(?P<level>info|debug|warn|warning|error|fatal|trace)(?:\\]|\\s|,|:|$)"                }
                 stage.labels {
                   values = { level = "level" }
                 }
@@ -204,7 +203,7 @@ spec:
                   drop_malformed = false 
                 }
                 stage.regex {
-                  expression = "(?i)(?:level=|level: |\\[\vert{}\\s\vert{}^)(?P<level>info\vert{}debug\vert{}warn\vert{}warning\vert{}error\vert{}fatal\vert{}trace)(?:\\]|\\s|,|:|$)"
+                  expression = "(?i)(?:level=|level: |\\[|\\s|^)(?P<level>info|debug|warn|warning|error|fatal|trace)(?:\\]|\\s|,|:|$)"
                 }
                 stage.labels {
                   values = { level = "level" }
