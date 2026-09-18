@@ -15,19 +15,20 @@ spec:
           type: daemonset
           hostPID: true 
 
-        extraVolumes:
-          - name: tetragon-logs
-            hostPath:
-              path: /var/run/cilium/tetragon
-          - name: host-proc
-            hostPath:
-              path: /proc
-          - name: host-sys
-            hostPath:
-              path: /sys
-          - name: host-root
-            hostPath:
-              path: /
+          volumes:
+            extra:
+              - name: tetragon-logs
+                hostPath:
+                  path: /var/run/cilium/tetragon
+              - name: host-proc
+                hostPath:
+                  path: /proc
+              - name: host-sys
+                hostPath:
+                  path: /sys
+              - name: host-root
+                hostPath:
+                  path: /
 
         alloy:
           extraPorts:
