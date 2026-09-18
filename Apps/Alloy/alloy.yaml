@@ -351,7 +351,19 @@ spec:
 
               prometheus.scrape "host_metrics" {
                 targets    = prometheus.exporter.unix.host.targets
+                forward_to = [prometheus.relabel.host_metrics.receiver]
+              }
+
+              prometheus.relabel "host_metrics" {
                 forward_to = [prometheus.remote_write.mimir_infra.receiver]
+                rule {
+                  target_label = "instance"
+                  replacement  = coalesce(env("HOSTNAME"), constants.hostname)
+                }
+                rule {
+                  target_label = "job"
+                  replacement  = "integrations/node-exporter"
+                }
               }
 
   destination:
