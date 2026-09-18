@@ -274,7 +274,7 @@ spec:
                   statements = [
                     `set(attributes["namespace"], resource.attributes["k8s.namespace.name"])`,
                     `set(attributes["pod"], resource.attributes["k8s.pod.name"])`,
-                    `set(attributes["container"], resource.attributes["k8s.container.name"])`
+                    `set(attributes["container"], resource.attributes["k8s.container.name"])`,
                   ]
                 }
                 output {
@@ -383,7 +383,7 @@ spec:
                 }
                 rule {
                   target_label = "job"
-                  replacement  = "integrations/node-exporter"
+                  replacement  = "node-exporter"
                 }
               }
 
