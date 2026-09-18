@@ -377,6 +377,7 @@ spec:
 
               prometheus.relabel "host_metrics" {
                 forward_to = [prometheus.remote_write.mimir_infra.receiver]
+
                 rule {
                   target_label = "instance"
                   replacement  = coalesce(env("HOSTNAME"), constants.hostname)
@@ -384,6 +385,14 @@ spec:
                 rule {
                   target_label = "job"
                   replacement  = "node-exporter"
+                }
+                rule {
+                  target_label = "job_name"
+                  replacement  = "integrations/node-exporter"
+                }
+                rule {
+                  action = "labeldrop"
+                  regex = "server"
                 }
               }
 
