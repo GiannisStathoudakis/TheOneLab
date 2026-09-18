@@ -259,7 +259,7 @@ spec:
                     `attributes["http.target"] == "/health"`,
                     `attributes["http.target"] == "/metrics"`,
                     `attributes["http.target"] == "/ready"`,
-                    `attributes["http.route"] == "/healthz"`
+                    `attributes["http.route"] == "/healthz"`,
                   ]
                 }
                 output {
