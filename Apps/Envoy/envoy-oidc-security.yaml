@@ -18,6 +18,8 @@ spec:
       - "openid"
       - "email"
       - "profile"
+      - "groups"
+      - "offline_access"
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
@@ -39,3 +41,5 @@ spec:
       - "openid"
       - "email"
       - "profile"
+      - "groups"
+      - "offline_access"

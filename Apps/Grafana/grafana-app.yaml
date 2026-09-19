@@ -44,7 +44,7 @@ spec:
             enabled: true
             name: Authentik
             icon: signin
-            scopes: openid profile email groups
+            scopes: openid profile email groups offline_access
             auth_url: https://authentik.kublab.org/application/o/authorize/
             token_url: https://authentik.kublab.org/application/o/token/
             api_url: https://authentik.kublab.org/application/o/userinfo

@@ -25,7 +25,7 @@ spec:
               issuer: https://authentik.kublab.org/application/o/argocd/
               clientID: $argocd-oidc-secret:clientID
               clientSecret: $argocd-oidc-secret:clientSecret
-              requestedScopes: ["openid", "profile", "email", "groups"]
+              requestedScopes: ["openid", "profile", "email", "groups", "offline_access"]
           
           rbac:
             policy.default: ''
