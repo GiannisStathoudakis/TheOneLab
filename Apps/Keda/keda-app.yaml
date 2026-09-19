@@ -9,9 +9,6 @@ spec:
     repoURL: https://kedacore.github.io/charts
     chart: keda
     targetRevision: 2.20.2
-    helm:
-      values: |
-        
   destination:
     server: https://kubernetes.default.svc
     namespace: keda
@@ -19,6 +16,6 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:  
+    syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
