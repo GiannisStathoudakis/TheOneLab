@@ -41,6 +41,8 @@ spec:
             path: Apps/Mimir
           - app: alloy
             path: Apps/Alloy
+          - app: keda
+            path: Apps/Keda
           #- app: kyverno
           #  path: Apps/Kyverno
           #- app: renovate 
