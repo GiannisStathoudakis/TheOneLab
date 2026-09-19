@@ -12,6 +12,9 @@ spec:
     targetRevision: 12.10.3
     helm:
       values: |
+        # Static dummy password to prevent Helm's random string generation on every evaluation.
+        # This prevents ArgoCD continuous OutOfSync loops. Local login is disabled anyway via OIDC.
+        adminPassword: "password"
         deploymentStrategy:
           type: Recreate
 
