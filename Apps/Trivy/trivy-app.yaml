@@ -1,0 +1,74 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: trivy-operator
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://aquasecurity.github.io/helm-charts/
+    chart: trivy-operator
+    targetRevision: 0.34.0
+    helm:
+      values: |
+        operator:
+          replicas: 1
+          scanJobsConcurrentLimit: 1
+          scanNodeCollectorLimit: 1
+          
+          scannerReportTTL: "24h"
+          
+          vulnerabilityScannerEnabled: true
+          configAuditScannerEnabled: true
+          rbacAssessmentScannerEnabled: true
+          infraAssessmentScannerEnabled: true
+          clusterComplianceEnabled: true
+          exposedSecretScannerEnabled: true
+          
+          metricsFindingsEnabled: true
+          metricsVulnIdEnabled: false 
+          metricsConfigAuditInfo: false
+          metricsExposedSecretInfo: false
+
+        trivy:
+          ignoreUnfixed: false
+          mode: Standalone
+          
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 500m
+              memory: 500Mi
+              
+        trivyOperator:
+          scanJobPodTemplateContainerSecurityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+
+        serviceMonitor:
+          enabled: true
+          honorLabels: true
+          
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: trivy-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
