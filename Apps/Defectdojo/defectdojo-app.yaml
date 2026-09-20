@@ -46,9 +46,6 @@ spec:
           auth:
             username: defectdojo
             database: defectdojo
-            existingSecret: defectdojo-core-secrets
-            secretKeys:
-              userPasswordKey: dbPassword
           primary:
             resources:
               requests:
@@ -60,9 +57,6 @@ spec:
         valkey:
           enabled: true
           architecture: standalone
-          auth:
-            existingSecret: defectdojo-core-secrets
-            existingSecretPasswordKey: valkeyPassword
           primary:
             resources:
               limits:
@@ -72,41 +66,21 @@ spec:
           run: true
           keepSeconds: 60
         admin:
-          password: ""
+          password: "" 
 
         extraConfigs:
           DD_SOCIAL_AUTH_KEYCLOAK_ENABLED: 'true'
 
         extraEnv:
-          - name: DD_DATABASE_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: defectdojo-core-secrets
-                key: dbPassword
-          - name: DD_CELERY_BROKER_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: defectdojo-core-secrets
-                key: valkeyPassword
-          - name: DD_SECRET_KEY
-            valueFrom:
-              secretKeyRef:
-                name: defectdojo-core-secrets
-                key: djangoSecretKey
-          - name: DD_CREDENTIAL_AES_256_KEY
-            valueFrom:
-              secretKeyRef:
-                name: defectdojo-core-secrets
-                key: djangoCredentialKey
           - name: DD_SOCIAL_AUTH_KEYCLOAK_KEY
             valueFrom:
               secretKeyRef:
-                name: defectdojo-core-secrets
+                name: defectdojo-oidc-secret
                 key: clientID
           - name: DD_SOCIAL_AUTH_KEYCLOAK_SECRET
             valueFrom:
               secretKeyRef:
-                name: defectdojo-core-secrets
+                name: defectdojo-oidc-secret
                 key: clientSecret
           - name: DD_SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY
             value: "https://authentik.kublab.org/application/o/defectdojo/"

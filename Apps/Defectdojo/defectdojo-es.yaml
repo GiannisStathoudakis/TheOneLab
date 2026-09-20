@@ -1,7 +1,8 @@
+---
 apiVersion: external-secrets.io/v1 
 kind: ExternalSecret
 metadata:
-  name: defectdojo-eso-secrets
+  name: defectdojo-core-es
   namespace: defectdojo
 spec:
   refreshInterval: "1h"
@@ -9,33 +10,78 @@ spec:
     name: vault-backend
     kind: ClusterSecretStore
   target:
-    name: defectdojo-core-secrets
-    template:
-      metadata:
-        labels:
-          app.kubernetes.io/part-of: defectdojo
+    name: defectdojo
   data:
-  - secretKey: clientSecret
+  - secretKey: DD_SECRET_KEY
     remoteRef:
       key: secret/defectdojo
-      property: clientSecret
+      property: djangoSecretKey
+  - secretKey: DD_CREDENTIAL_AES_256_KEY
+    remoteRef:
+      key: secret/defectdojo
+      property: djangoCredentialKey
+
+---
+apiVersion: external-secrets.io/v1 
+kind: ExternalSecret
+metadata:
+  name: defectdojo-pg-es
+  namespace: defectdojo
+spec:
+  refreshInterval: "1h"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: defectdojo-postgresql-specific
+  data:
+  - secretKey: postgresql-password
+    remoteRef:
+      key: secret/defectdojo
+      property: dbPassword
+  - secretKey: postgresql-postgres-password
+    remoteRef:
+      key: secret/defectdojo
+      property: dbPassword
+
+---
+apiVersion: external-secrets.io/v1 
+kind: ExternalSecret
+metadata:
+  name: defectdojo-valkey-es
+  namespace: defectdojo
+spec:
+  refreshInterval: "1h"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: defectdojo-valkey-specific
+  data:
+  - secretKey: valkey-password
+    remoteRef:
+      key: secret/defectdojo
+      property: valkeyPassword
+
+---
+apiVersion: external-secrets.io/v1 
+kind: ExternalSecret
+metadata:
+  name: defectdojo-oidc-es
+  namespace: defectdojo
+spec:
+  refreshInterval: "1h"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: defectdojo-oidc-secret
+  data:
   - secretKey: clientID
     remoteRef:
       key: secret/defectdojo
       property: clientId
-  - secretKey: dbPassword
+  - secretKey: clientSecret
     remoteRef:
       key: secret/defectdojo
-      property: dbPassword
-  - secretKey: valkeyPassword
-    remoteRef:
-      key: secret/defectdojo
-      property: valkeyPassword
-  - secretKey: djangoSecretKey
-    remoteRef:
-      key: secret/defectdojo
-      property: djangoSecretKey
-  - secretKey: djangoCredentialKey
-    remoteRef:
-      key: secret/defectdojo
-      property: djangoCredentialKey
+      property: clientSecret
