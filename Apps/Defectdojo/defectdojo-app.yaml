@@ -16,10 +16,6 @@ spec:
         
         alternativeHosts:
           - defectdojo-django.defectdojo.svc.cluster.local
-        
-        createSecret: true
-        createValkeySecret: true
-        createPostgresqlSecret: true
           
         django:
           ingress:
@@ -47,6 +43,12 @@ spec:
         postgresql:
           enabled: true
           architecture: standalone
+          auth:
+            username: defectdojo
+            database: defectdojo
+            existingSecret: defectdojo-core-secrets
+            secretKeys:
+              userPasswordKey: dbPassword
           primary:
             resources:
               requests:
@@ -58,6 +60,9 @@ spec:
         valkey:
           enabled: true
           architecture: standalone
+          auth:
+            existingSecret: defectdojo-core-secrets
+            existingSecretPasswordKey: valkeyPassword
           primary:
             resources:
               limits:
@@ -66,48 +71,59 @@ spec:
         initializer:
           run: true
           keepSeconds: 60
-      
         admin:
           password: ""
-          # Προαιρετικά
-          # create: false
-          
+
         extraConfigs:
           DD_SOCIAL_AUTH_KEYCLOAK_ENABLED: 'true'
 
         extraEnv:
+          - name: DD_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: defectdojo-core-secrets
+                key: dbPassword
+          - name: DD_CELERY_BROKER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: defectdojo-core-secrets
+                key: valkeyPassword
+          - name: DD_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: defectdojo-core-secrets
+                key: djangoSecretKey
+          - name: DD_CREDENTIAL_AES_256_KEY
+            valueFrom:
+              secretKeyRef:
+                name: defectdojo-core-secrets
+                key: djangoCredentialKey
           - name: DD_SOCIAL_AUTH_KEYCLOAK_KEY
             valueFrom:
               secretKeyRef:
-                name: defectdojo-oidc-secret
+                name: defectdojo-core-secrets
                 key: clientID
           - name: DD_SOCIAL_AUTH_KEYCLOAK_SECRET
             valueFrom:
               secretKeyRef:
-                name: defectdojo-oidc-secret
+                name: defectdojo-core-secrets
                 key: clientSecret
           - name: DD_SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY
             value: "https://authentik.kublab.org/application/o/defectdojo/"
 
-
         localsettingspy: |
           SOCIAL_AUTH_KEYCLOAK_EXTRA_DATA = ['groups']
-          
           def map_authentik_roles(backend, details, response, user, *args, **kwargs):
               if not user:
                   return
-              
               groups = response.get('groups', [])
-              
               if 'authentik Admins' in groups:
                   user.is_superuser = True
                   user.is_staff = True
               else:
                   user.is_superuser = False
                   user.is_staff = False
-                  
               user.save()
-
           SOCIAL_AUTH_PIPELINE = (
               'social_core.pipeline.social_auth.social_details',
               'social_core.pipeline.social_auth.social_uid',

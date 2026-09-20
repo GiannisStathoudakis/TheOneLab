@@ -1,7 +1,7 @@
 apiVersion: external-secrets.io/v1 
 kind: ExternalSecret
 metadata:
-  name: defectdojo-oidc-es
+  name: defectdojo-eso-secrets
   namespace: defectdojo
 spec:
   refreshInterval: "1h"
@@ -9,7 +9,7 @@ spec:
     name: vault-backend
     kind: ClusterSecretStore
   target:
-    name: defectdojo-oidc-secret
+    name: defectdojo-core-secrets
     template:
       metadata:
         labels:
@@ -23,3 +23,19 @@ spec:
     remoteRef:
       key: secret/defectdojo
       property: clientId
+  - secretKey: dbPassword
+    remoteRef:
+      key: secret/defectdojo
+      property: dbPassword
+  - secretKey: valkeyPassword
+    remoteRef:
+      key: secret/defectdojo
+      property: valkeyPassword
+  - secretKey: djangoSecretKey
+    remoteRef:
+      key: secret/defectdojo
+      property: djangoSecretKey
+  - secretKey: djangoCredentialKey
+    remoteRef:
+      key: secret/defectdojo
+      property: djangoCredentialKey
