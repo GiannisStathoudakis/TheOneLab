@@ -64,7 +64,13 @@ spec:
                 memory: 128Mi
 
         initializer:
-          run: false
+          run: true
+          keepSeconds: 60
+      
+        admin:
+          password: ""
+          # Προαιρετικά
+          # create: false
           
         extraConfigs:
           DD_SOCIAL_AUTH_KEYCLOAK_ENABLED: 'true'
