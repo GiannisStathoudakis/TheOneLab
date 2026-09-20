@@ -16,6 +16,10 @@ spec:
         
         alternativeHosts:
           - defectdojo-django.defectdojo.svc.cluster.local
+        
+        createSecret: true
+        createValkeySecret: true
+        createPostgresqlSecret: true
           
         django:
           ingress:
