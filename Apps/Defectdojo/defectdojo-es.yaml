@@ -20,6 +20,10 @@ spec:
     remoteRef:
       key: secret/defectdojo
       property: djangoCredentialKey
+  - secretKey: METRICS_HTTP_AUTH_PASSWORD
+    remoteRef:
+      key: secret/defectdojo
+      property: djangoSecretKey
 
 ---
 apiVersion: external-secrets.io/v1 
