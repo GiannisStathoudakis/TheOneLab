@@ -6,9 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://defectdojo.github.io/django-DefectDojo
+    repoURL: https://raw.githubusercontent.com/DefectDojo/django-DefectDojo/helm-charts
     chart: defectdojo
-    targetRevision: 3.3.100
+    targetRevision: 1.9.52 
     helm:
       values: |
         host: defectdojo.kublab.org
