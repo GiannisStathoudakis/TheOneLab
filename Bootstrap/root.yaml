@@ -41,6 +41,10 @@ spec:
             path: Apps/Mimir
           - app: alloy
             path: Apps/Alloy
+          - app: defectdojo
+            path: Apps/Defectdojo
+          - app: trivy
+            path: Apps/Trivy
           - app: keda
             path: Apps/Keda
           #- app: kyverno
