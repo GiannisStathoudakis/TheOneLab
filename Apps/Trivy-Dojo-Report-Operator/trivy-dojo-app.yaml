@@ -22,6 +22,7 @@ spec:
               repository: ghcr.io/telekom-mms/docker-trivy-dojo-operator
               tag: 0.2.3
             env:
+              USER: "operator"
               defectDojoActive: "true"
               defectDojoAutoCreateContext: "true"
               defectDojoCloseOldFindings: "false"
