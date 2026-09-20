@@ -13,8 +13,8 @@ spec:
       values: |
         defectDojoApiCredentials:
           url: "http://defectdojo-django.defectdojo.svc.cluster.local"
-          apiKey: ""
-        
+          apiKey: "managed-by-external-secrets" 
+
         operator:
           replicas: 1
           trivyDojoReportOperator:
@@ -29,7 +29,6 @@ spec:
               defectDojoDeduplicationOnEngagement: "true"
               defectDojoMinimumSeverity: Info
               defectDojoVerified: "false"
-              
               defectDojoEngagementName: 'Trivy Operator'
               defectDojoEvalTestTitle: "true"
               defectDojoEvalProductName: "true"
@@ -37,16 +36,18 @@ spec:
               defectDojoTestTitle: 'f"{body[\"report\"][\"artifact\"][\"repository\"]}:{body[\"report\"][\"artifact\"][\"tag\"]}"'
               defectDojoProductName: 'meta["labels"]["trivy-operator.resource.name"]'
               defectDojoProductTypeName: 'meta["namespace"]'
+            
 
-            extraEnv:
-              - name: DOJO_API_KEY
-                valueFrom:
-                  secretKeyRef:
-                    name: trivy-dojo-credentials
-                    key: defectdojo-api-key
   destination:
     server: https://kubernetes.default.svc
     namespace: defectdojo-report 
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: trivy-dojo-report-operator
+      jsonPointers:
+        - /data
+        
   syncPolicy:
     automated:
       prune: true
