@@ -52,8 +52,7 @@ spec:
             readOnlyRootFilesystem: true
 
         serviceMonitor:
-          enabled: true
-          honorLabels: true
+          enabled: false
           
         resources:
           requests:
