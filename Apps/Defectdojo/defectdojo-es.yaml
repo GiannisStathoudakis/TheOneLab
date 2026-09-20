@@ -1,4 +1,5 @@
 ---
+# 1. Το Secret του ίδιου του DefectDojo
 apiVersion: external-secrets.io/v1 
 kind: ExternalSecret
 metadata:
@@ -10,7 +11,7 @@ spec:
     name: vault-backend
     kind: ClusterSecretStore
   target:
-    name: defectdojo
+    name: defectdojo 
   data:
   - secretKey: DD_SECRET_KEY
     remoteRef:
@@ -24,6 +25,10 @@ spec:
     remoteRef:
       key: secret/defectdojo
       property: djangoSecretKey
+  - secretKey: DD_ADMIN_PASSWORD
+    remoteRef:
+      key: secret/defectdojo
+      property: adminPassword
 
 ---
 apiVersion: external-secrets.io/v1 
