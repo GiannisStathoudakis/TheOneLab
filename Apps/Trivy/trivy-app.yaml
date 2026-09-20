@@ -12,47 +12,21 @@ spec:
     helm:
       values: |
         operator:
-          replicas: 1
           scanJobsConcurrentLimit: 1
-          scanNodeCollectorLimit: 1
-          
-          scannerReportTTL: "24h"
-          
-          vulnerabilityScannerEnabled: true
-          configAuditScannerEnabled: true
-          rbacAssessmentScannerEnabled: true
-          infraAssessmentScannerEnabled: true
-          clusterComplianceEnabled: true
-          exposedSecretScannerEnabled: true
-          
-          metricsFindingsEnabled: true
-          metricsVulnIdEnabled: false 
-          metricsConfigAuditInfo: false
-          metricsExposedSecretInfo: false
-
-        trivy:
-          ignoreUnfixed: false
-          mode: Standalone
-          
-          resources:
-            requests:
-              cpu: 100m
-              memory: 100Mi
-            limits:
-              cpu: 500m
-              memory: 500Mi
-              
-        trivyOperator:
-          scanJobPodTemplateContainerSecurityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            privileged: false
-            readOnlyRootFilesystem: true
-
-        serviceMonitor:
-          enabled: false
+                   
+          metricsVulnIdEnabled: true
+          metricsConfigAuditInfo: true
+          metricsExposedSecretInfo: true
+          metricsRbacAssessmentInfo: true
+          metricsInfraAssessmentInfo: true
+          metricsClusterComplianceInfo: true
+          metricsImageInfo: true
+                        
+        service:
+          annotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "80"
+            prometheus.io/path: "/metrics"
           
         resources:
           requests:
