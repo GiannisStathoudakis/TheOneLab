@@ -1,0 +1,25 @@
+apiVersion: external-secrets.io/v1 
+kind: ExternalSecret
+metadata:
+  name: defectdojo-oidc-es
+  namespace: defectdojo
+spec:
+  refreshInterval: "1h"
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: defectdojo-oidc-secret
+    template:
+      metadata:
+        labels:
+          app.kubernetes.io/part-of: defectdojo
+  data:
+  - secretKey: clientSecret
+    remoteRef:
+      key: secret/defectdojo
+      property: clientSecret
+  - secretKey: clientID
+    remoteRef:
+      key: secret/defectdojo
+      property: clientId
