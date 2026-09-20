@@ -17,12 +17,21 @@ spec:
 
         operator:
           replicas: 1
+          securityContext:
+            runAsUser: 0
+            
           trivyDojoReportOperator:
             image:
               repository: ghcr.io/telekom-mms/docker-trivy-dojo-operator
               tag: 0.2.3
+              
+            extraEnv:
+              - name: USER
+                value: "operator"
+              - name: LOGNAME
+                value: "operator"
+                
             env:
-              USER: "operator"
               defectDojoActive: "true"
               defectDojoAutoCreateContext: "true"
               defectDojoCloseOldFindings: "false"
