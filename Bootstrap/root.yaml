@@ -43,6 +43,8 @@ spec:
             path: Apps/Alloy
           - app: defectdojo
             path: Apps/Defectdojo
+          - app: trivy-dojo
+            path: Apps/Trivy-Dojo-Report-Operator
           - app: trivy
             path: Apps/Trivy
           - app: keda
