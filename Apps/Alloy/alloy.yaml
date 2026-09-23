@@ -146,20 +146,12 @@ spec:
                   url = "http://mimir-distributor.mimir.svc.cluster.local:8080/api/v1/push"
                   headers = { "X-Scope-OrgID" = "infra" }
                 }
-                wal {
-                  enabled = true
-                  max_segment_size = "10MB"
-                }
               }
 
               prometheus.remote_write "mimir_app" {
                 endpoint {
                   url = "http://mimir-distributor.mimir.svc.cluster.local:8080/api/v1/push"
                   headers = { "X-Scope-OrgID" = "app" }
-                }
-                wal {
-                  enabled = true
-                  max_segment_size = "10MB"
                 }
               }
 
@@ -208,7 +200,6 @@ spec:
                 }
                 wal {
                   enabled = true
-                  max_segment_size = "10MB"
                 }
               }
 
@@ -236,7 +227,6 @@ spec:
                 }
                 wal {
                   enabled = true
-                  max_segment_size = "10MB"
                 }
               }
               
@@ -314,9 +304,9 @@ spec:
                 metric_statements {
                   context = "datapoint"
                   statements = [
-                    `set(attributes["namespace"], resource.attributes["k8s.namespace.name"])`,
-                    `set(attributes["pod"], resource.attributes["k8s.pod.name"])`,
-                    `set(attributes["container"], resource.attributes["k8s.container.name"])`,
+                    `set(datapoint.attributes["namespace"], resource.attributes["k8s.namespace.name"])`,
+                    `set(datapoint.attributes["pod"], resource.attributes["k8s.pod.name"])`,
+                    `set(datapoint.attributes["container"], resource.attributes["k8s.container.name"])`,
                   ]
                 }
                 output {
