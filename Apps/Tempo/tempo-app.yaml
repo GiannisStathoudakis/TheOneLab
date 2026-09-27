@@ -34,7 +34,7 @@ spec:
         # -----------------------------------------------------------
         ingest:
           kafka:
-            address: "redpanda.redpanda.svc.cluster.local:9092"
+            address: "redpanda.redpanda.svc.cluster.local:9093"
             topic: tempo-traces
             auto_create_topic_enabled: true
             auto_create_topic_default_partitions: 1
