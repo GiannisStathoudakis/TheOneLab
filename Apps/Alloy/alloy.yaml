@@ -284,7 +284,7 @@ spec:
               */
 
               // ==========================================
-              // 5. Redpanda Kafka & OTLP Pipeline (Traces & Beyla Metrics)
+              // 5. OTLP Pipeline (Traces & Beyla Metrics)
               // ==========================================
               otelcol.receiver.otlp "default" {
                 grpc { endpoint = "0.0.0.0:4317" }
@@ -327,7 +327,7 @@ spec:
 
               otelcol.processor.batch "traces" {
                 output {
-                  traces = [otelcol.exporter.kafka.redpanda.input]
+                  traces = [otelcol.exporter.otlp.tempo.input]
                 }
               }
 
@@ -337,10 +337,13 @@ spec:
                 }
               }
 
-              otelcol.exporter.kafka "redpanda" {
-                brokers          = ["redpanda.redpanda.svc.cluster.local:9093"]
-                topic            = "tempo-traces"
-                protocol_version = "3.0.0"
+              otelcol.exporter.otlp "tempo" {
+                client {
+                  endpoint = "tempo-distributor.tempo.svc.cluster.local:4317"
+                  tls {
+                    insecure = true
+                  }
+                }
               }
 
               otelcol.exporter.prometheus "to_mimir_app" {
@@ -395,7 +398,7 @@ spec:
               // ==========================================
               beyla.ebpf "auto_instrumentation" {
                 discovery {
-                  services {
+                  instrument {
                     kubernetes {
                       namespace = "garage" 
                     }
