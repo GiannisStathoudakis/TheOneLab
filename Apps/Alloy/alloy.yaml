@@ -276,16 +276,16 @@ spec:
               // ==========================================
               // 4. Pyroscope (Continuous Profiling)
               // ==========================================
-              pyroscope.ebpf "default" {
-                targets    = discovery.relabel.app_pods.output
-                forward_to = [pyroscope.write.pyroscope.receiver]
-              }
+              //pyroscope.ebpf "default" {
+              //  targets    = discovery.relabel.app_pods.output
+              //  forward_to = [pyroscope.write.pyroscope.receiver]
+              //}
 
-              pyroscope.write "pyroscope" {
-                endpoint {
-                  url = "http://pyroscope-distributor.pyroscope.svc.cluster.local:4040"
-                }
-              }
+              //pyroscope.write "pyroscope" {
+              //  endpoint {
+              //    url = "http://pyroscope-distributor.pyroscope.svc.cluster.local:4040"
+              //  }
+              //}
 
               // ==========================================
               // 5. Tempo & OTLP Pipeline (Traces & Beyla Metrics)
