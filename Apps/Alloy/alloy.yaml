@@ -270,6 +270,7 @@ spec:
               // ==========================================
               // 4. Pyroscope (Continuous Profiling)
               // ==========================================
+              /* 
               pyroscope.ebpf "default" {
                 targets    = discovery.relabel.app_pods.output
                 forward_to = [pyroscope.write.pyroscope.receiver]
@@ -280,6 +281,7 @@ spec:
                   url = "http://pyroscope-distributor.pyroscope.svc.cluster.local:4040"
                 }
               }
+              */
 
               // ==========================================
               // 5. Redpanda Kafka & OTLP Pipeline (Traces & Beyla Metrics)
