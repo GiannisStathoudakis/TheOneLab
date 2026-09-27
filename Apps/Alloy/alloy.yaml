@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://grafana.github.io/helm-charts
     chart: alloy
-    targetRevision: 1.10.0
+    targetRevision: 1.13.0
     helm:
       values: |
         controller:
@@ -33,6 +33,11 @@ spec:
                   path: /
 
         alloy:
+          stabilityLevel: generally-available
+          
+          clustering:
+            enabled: true
+
           extraPorts:
             - name: otlp-grpc
               port: 4317
@@ -42,6 +47,17 @@ spec:
               port: 4318
               targetPort: 4318
               protocol: TCP
+
+          # -----------------------------------------------------------
+          # DAEMONSET RESOURCE GUARDRAILS
+          # -----------------------------------------------------------
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1024Mi
 
           securityContext:
             privileged: false
@@ -58,9 +74,12 @@ spec:
 
           rbac:
             create: true
-          extraClusterRoleRules:
+          clusterRules:
             - apiGroups: [""]
-              resources: ["pods", "pods/log", "nodes", "nodes/proxy", "nodes/metrics", "services", "endpoints"]
+              resources: ["nodes", "nodes/metrics", "nodes/proxy"]
+              verbs: ["get", "list", "watch"]
+            - apiGroups: [""]
+              resources: ["pods", "pods/log", "namespaces", "services", "endpoints"]
               verbs: ["get", "list", "watch"]
 
           mounts:
@@ -195,7 +214,7 @@ spec:
               }
               loki.write "loki_app" {
                 endpoint {
-                  url = "http://loki.loki.svc.cluster.local:3100/loki/api/v1/push"
+                  url = "http://loki-write.loki.svc.cluster.local:3100/loki/api/v1/push"
                   tenant_id = "app"
                 }
                 wal {
@@ -222,7 +241,7 @@ spec:
               }
               loki.write "loki_infra" {
                 endpoint {
-                  url = "http://loki.loki.svc.cluster.local:3100/loki/api/v1/push"
+                  url = "http://loki-write.loki.svc.cluster.local:3100/loki/api/v1/push"
                   tenant_id = "infra"
                 }
                 wal {
@@ -268,7 +287,7 @@ spec:
 
               pyroscope.write "pyroscope" {
                 endpoint {
-                  url = "http://pyroscope.pyroscope.svc.cluster.local:4040"
+                  url = "http://pyroscope-distributor.pyroscope.svc.cluster.local:4040"
                 }
               }
 
@@ -323,7 +342,7 @@ spec:
 
               otelcol.exporter.otlp "tempo" {
                 client {
-                  endpoint = "tempo.tempo.svc.cluster.local:4317"
+                  endpoint = "tempo-distributor.tempo.svc.cluster.local:4317"
                   tls { insecure = true }
                 }
               }
