@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://grafana-community.github.io/helm-charts
     chart: loki
-    targetRevision: 18.4.2
+    targetRevision: 18.13.5
     helm:
       values: |
         global:
@@ -16,11 +16,26 @@ spec:
             - secretRef:
                 name: loki-s3-credentials
 
-        deploymentMode: Monolithic
-        
+        deploymentMode: SimpleScalable
+
         loki:
           auth_enabled: true
           
+          commonConfig:
+            replication_factor: 1
+            
+          storage:
+            type: s3
+            bucketNames:
+              chunks: loki-logs
+              ruler: loki-logs
+              admin: loki-logs
+            s3:
+              endpoint: garage.garage.svc.cluster.local:3900
+              region: garage
+              insecure: true
+              s3ForcePathStyle: true
+
           compactor:
             working_directory: /var/loki/compactor
             compaction_interval: 10m
@@ -35,14 +50,10 @@ spec:
               - selector: '{level=~"info|debug|trace"}'
                 priority: 1
                 period: 336h
-              
               - selector: '{log_type="tetragon_security"}'
                 priority: 2
                 period: 8760h
           
-          commonConfig:
-            replication_factor: 1
-            
           schemaConfig:
             configs:
               - from: "2026-01-01"
@@ -52,28 +63,13 @@ spec:
                 index:
                   prefix: loki_index_
                   period: 24h
-                  
-          storage:
-            type: s3
-            bucketNames:
-              chunks: loki-logs
-              ruler: loki-logs
-              admin: loki-logs
-            s3:
-              endpoint: garage.garage.svc.cluster.local:3900
-              region: garage
-              insecure: true
-              s3forcepathstyle: true
-        
-        gateway:
-          enabled: false
 
         singleBinary:
+          replicas: 0
+          
+        write:
           replicas: 1
-          nodeSelector:
-            node-role.kubernetes.io/control-plane: "true"
           persistence:
-            enabled: true
             size: 5Gi
             storageClass: openebs-lvm
           resources:
@@ -82,40 +78,65 @@ spec:
               memory: 512Mi
             limits:
               cpu: 1000m
-              memory: 2Gi
+              memory: 1536Mi
 
         read:
-          replicas: 0
-        write:
-          replicas: 0
-        backend:
-          replicas: 0
+          replicas: 1
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1536Mi
 
+        backend:
+          replicas: 1
+          persistence:
+            size: 5Gi
+            storageClass: openebs-lvm
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+        chunksCache:
+          enabled: true
+          allocatedMemory: 512
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 768Mi
+
+        resultsCache:
+          enabled: true
+          allocatedMemory: 512
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 768Mi
+
+        minio:
+          enabled: false
+
+        gateway:
+          enabled: false
+          
         lokiCanary:
           enabled: false
+          
         test:
           enabled: false
 
-        chunksCache:
-          allocatedMemory: 512
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 1Gi
-
-        resultsCache:
-          allocatedMemory: 512
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 1Gi
-          
   destination:
     server: https://kubernetes.default.svc
     namespace: loki
