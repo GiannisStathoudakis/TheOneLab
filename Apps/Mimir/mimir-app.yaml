@@ -45,6 +45,7 @@ spec:
                 access_key_id: ${AWS_ACCESS_KEY_ID}
                 secret_access_key: ${AWS_SECRET_ACCESS_KEY}
                 insecure: true
+                
             #alertmanager_storage:
             #  backend: s3
             #  s3:
@@ -59,44 +60,13 @@ spec:
 
         minio:
           enabled: false
-
         gateway:
           enabled: false
-
         rollout_operator:
           enabled: false
-
-        ingester:
-          replicas: 1
-          zoneAwareReplication:
-            enabled: false
-            
-        store_gateway:
-          replicas: 1
-          zoneAwareReplication:
-            enabled: false
-
-        compactor:
-          replicas: 1
-
-        distributor:
-          replicas: 1
-
-        querier:
-          replicas: 1
-
-        query_frontend:
-          replicas: 1
-
-        query_scheduler:
-          replicas: 1
-
-        ruler:
-          replicas: 1
-
         alertmanager:
           enabled: false
-
+          
         #alertmanager:
         #  replicas: 1
         #  statefulSet:
@@ -110,9 +80,148 @@ spec:
         #    - name: alertmanager-fallback
         #      mountPath: /etc/alertmanager-fallback
         #      readOnly: true
-            
+
+        ingester:
+          replicas: 1
+          zoneAwareReplication:
+            enabled: false
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1536Mi
+
+        store_gateway:
+          replicas: 1
+          zoneAwareReplication:
+            enabled: false
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1024Mi
+
+        compactor:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1024Mi
+
+        distributor:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 768Mi
+
+        querier:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1024Mi
+
+        query_frontend:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 512Mi
+
+        query_scheduler:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 512Mi
+
+        ruler:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 768Mi
+
         overrides_exporter:
           replicas: 1
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+
+        chunks-cache:
+          enabled: true
+          replicas: 1
+          allocatedMemory: 512  # Overriding the insane 8192MB default
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              cpu: 300m
+              memory: 768Mi
+
+        index-cache:
+          enabled: true
+          replicas: 1
+          allocatedMemory: 512  # Overriding the default 2048MB
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              cpu: 300m
+              memory: 768Mi
+
+        metadata-cache:
+          enabled: true
+          replicas: 1
+          allocatedMemory: 256  # Overriding the default 512MB
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 512Mi
+
+        results-cache:
+          enabled: true
+          replicas: 1
+          allocatedMemory: 256
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 512Mi
 
   destination:
     server: https://kubernetes.default.svc
