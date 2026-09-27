@@ -8,9 +8,12 @@ spec:
   source:
     repoURL: https://grafana.github.io/helm-charts
     chart: pyroscope
-    targetRevision: 2.2.1
+    targetRevision: 2.3.1
     helm:
       values: |
+        global:
+          imageRegistry: null
+
         minio:
           enabled: false
         alloy:
@@ -22,20 +25,6 @@ spec:
           extraEnvFrom:
             - secretRef:
                 name: pyroscope-s3-credentials
-          
-          persistence:
-            enabled: true
-            size: 2Gi
-            storageClassName: openebs-lvm
-
-          resources:
-            requests:
-              cpu: 250m
-              memory: 512Mi
-            limits:
-              cpu: 1000m
-              memory: 2Gi
-              
           config: |
             storage:
               backend: s3
@@ -48,6 +37,125 @@ spec:
             
             limits:
               compactor_blocks_retention_period: 168h
+
+        architecture:
+          storage:
+            v1: false
+            v2: true
+            
+          microservices:
+            enabled: true
+            
+            v2:
+              # 1. THE WRITE PATH
+              distributor:
+                replicaCount: 1
+                resources:
+                  requests:
+                    cpu: 100m
+                    memory: 256Mi
+                  limits:
+                    cpu: 500m
+                    memory: 512Mi
+
+              segment-writer:
+                replicaCount: 1
+                persistence:
+                  enabled: true
+                  size: 5Gi
+                  storageClass: openebs-lvm
+                resources:
+                  requests:
+                    cpu: 100m
+                    memory: 256Mi
+                  limits:
+                    cpu: 1000m
+                    memory: 1536Mi # Give it 1.5GB to safely chunk profiles before S3 upload
+
+              compaction-worker:
+                replicaCount: 1
+                persistence:
+                  enabled: true
+                  size: 5Gi
+                  storageClass: openebs-lvm
+                resources:
+                  requests:
+                    cpu: 100m
+                    memory: 256Mi
+                  limits:
+                    cpu: 500m
+                    memory: 1024Mi
+
+              # 2. THE READ PATH
+              query-frontend:
+                replicaCount: 1
+                resources:
+                  requests:
+                    cpu: 50m
+                    memory: 128Mi
+                  limits:
+                    cpu: 300m
+                    memory: 512Mi
+              
+              query-backend:
+                replicaCount: 1
+                resources:
+                  requests:
+                    cpu: 100m
+                    memory: 256Mi
+                  limits:
+                    cpu: 1000m
+                    memory: 1024Mi
+
+              # 3. CONTROL PLANE
+              metastore:
+                replicaCount: 1
+                persistence:
+                  enabled: true
+                  size: 2Gi
+                  storageClass: openebs-lvm
+                resources:
+                  requests:
+                    cpu: 50m
+                    memory: 128Mi
+                  limits:
+                    cpu: 300m
+                    memory: 512Mi
+                extraArgs:
+                  #Since we run 1 replica in lab, Raft must expect 1 peer, not 3
+                  metastore.raft.bootstrap-expect-peers: 1
+                  metastore.index.cleanup-interval: 1m
+                  metastore.snapshot-compact-on-restore: true
+
+              tenant-settings:
+                replicaCount: 1
+                resources:
+                  requests:
+                    cpu: 10m
+                    memory: 32Mi
+                  limits:
+                    cpu: 100m
+                    memory: 128Mi
+
+              ad-hoc-profiles:
+                replicaCount: 1
+                resources:
+                  requests:
+                    cpu: 10m
+                    memory: 32Mi
+                  limits:
+                    cpu: 100m
+                    memory: 128Mi
+                    
+              admin:
+                replicaCount: 1
+                resources:
+                  requests:
+                    cpu: 10m
+                    memory: 32Mi
+                  limits:
+                    cpu: 100m
+                    memory: 128Mi
 
   destination:
     server: https://kubernetes.default.svc
