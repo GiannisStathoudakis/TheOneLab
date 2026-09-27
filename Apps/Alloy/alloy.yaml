@@ -337,9 +337,8 @@ spec:
               }
 
               otelcol.exporter.kafka "redpanda" {
-                brokers  = ["redpanda.redpanda.svc.cluster.local:9092"]
-                topic    = "tempo-traces"
-                protocol = "otlp_proto"
+                brokers = ["redpanda.redpanda.svc.cluster.local:9092"]
+                topic   = "tempo-traces"
               }
 
               otelcol.exporter.prometheus "to_mimir_app" {
