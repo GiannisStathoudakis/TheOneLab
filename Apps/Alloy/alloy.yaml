@@ -31,6 +31,9 @@ spec:
               - name: host-root
                 hostPath:
                   path: /
+              - name: host-tracing
+                hostPath:
+                  path: /sys/kernel/tracing
 
         alloy:
           stabilityLevel: generally-available
@@ -71,6 +74,7 @@ spec:
                 - SYS_RESOURCE
                 - SYS_PTRACE
                 - DAC_READ_SEARCH
+                - IPC_LOCK
 
           rbac:
             create: true
@@ -97,6 +101,9 @@ spec:
                 mountPath: /host/root
                 readOnly: true
                 mountPropagation: HostToContainer
+              - name: host-tracing
+                mountPath: /sys/kernel/tracing
+                readOnly: true
 
           configMap:
             content: |-
