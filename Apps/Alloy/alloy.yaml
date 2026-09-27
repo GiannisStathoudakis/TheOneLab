@@ -270,10 +270,10 @@ spec:
               // ==========================================
               // 4. Pyroscope (Continuous Profiling)
               // ==========================================
-              /* 
               pyroscope.ebpf "default" {
                 targets    = discovery.relabel.app_pods.output
                 forward_to = [pyroscope.write.pyroscope.receiver]
+                python_enabled = false
               }
 
               pyroscope.write "pyroscope" {
@@ -281,7 +281,6 @@ spec:
                   url = "http://pyroscope-distributor.pyroscope.svc.cluster.local:4040"
                 }
               }
-              */
 
               // ==========================================
               // 5. OTLP Pipeline (Traces & Beyla Metrics)
