@@ -63,18 +63,7 @@ spec:
               memory: 1024Mi
 
           securityContext:
-            privileged: false
-            capabilities:
-              drop:
-                - ALL
-              add:
-                - BPF
-                - PERFMON
-                - SYS_ADMIN
-                - SYS_RESOURCE
-                - SYS_PTRACE
-                - DAC_READ_SEARCH
-                - IPC_LOCK
+            privileged: true
 
           rbac:
             create: true
