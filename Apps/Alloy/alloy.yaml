@@ -310,7 +310,7 @@ spec:
                   ]
                 }
                 output {
-                  traces = [otelcol.processor.batch.default.input]
+                  traces = [otelcol.processor.batch.traces.input]
                 }
               }
 
@@ -325,14 +325,19 @@ spec:
                   ]
                 }
                 output {
-                  metrics = [otelcol.processor.batch.default.input]
+                  metrics = [otelcol.processor.batch.metrics.input]
                 }
               }
 
-              otelcol.processor.batch "default" {
+              otelcol.processor.batch "traces" {
                 output {
-                  traces  = [otelcol.exporter.kafka.redpanda.input] 
-                  metrics = [otelcol.exporter.prometheus.to_mimir_app.input] 
+                  traces = [otelcol.exporter.kafka.redpanda.input]
+                }
+              }
+
+              otelcol.processor.batch "metrics" {
+                output {
+                  metrics = [otelcol.exporter.prometheus.to_mimir_app.input]
                 }
               }
 
