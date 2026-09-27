@@ -15,6 +15,13 @@ spec:
           extraEnvFrom:
             - secretRef:
                 name: tempo-s3-credentials
+                
+        traces:
+          otlp:
+            grpc:
+              enabled: true
+            http:
+              enabled: true
 
         tempo:
           retention: 168h
