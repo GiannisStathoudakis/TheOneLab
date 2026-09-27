@@ -7,21 +7,17 @@ spec:
   project: default
   source:
     repoURL: https://grafana-community.github.io/helm-charts
-    chart: tempo
-    targetRevision: 2.2.3
+    chart: tempo-distributed
+    targetRevision: 3.7.0
     helm:
       values: |
-        tempo:
-          # Delete traces after 1 week
-          retention: 168h 
-
-          metricsGenerator:
-            enabled: true
-            remoteWriteUrl: "http://mimir-distributor.mimir.svc.cluster.local:8080/api/v1/push"
-
+        global:
           extraEnvFrom:
             - secretRef:
                 name: tempo-s3-credentials
+
+        tempo:
+          retention: 168h
           
           storage:
             trace:
@@ -32,12 +28,141 @@ spec:
                 region: garage
                 insecure: true
                 forcepathstyle: true
-        
-        livenessProbe:
-          initialDelaySeconds: 60
-        readinessProbe:
-          initialDelaySeconds: 60
-                
+
+        # -----------------------------------------------------------
+        # THE KAFKA/REDPANDA PIPELINE
+        # -----------------------------------------------------------
+        ingest:
+          kafka:
+            address: "redpanda.redpanda.svc.cluster.local:9092"
+            topic: tempo-traces
+            auto_create_topic_enabled: true
+            auto_create_topic_default_partitions: 1
+
+        # -----------------------------------------------------------
+        # MICROSERVICES DECOUPLING & RESOURCE GUARDRAILS
+        # -----------------------------------------------------------
+        distributor:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+        blockBuilder:
+          enabled: true
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1536Mi
+
+        liveStore:
+          enabled: true
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1024Mi
+
+        querier:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1024Mi
+
+        queryFrontend:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 512Mi
+
+        backendScheduler:
+          enabled: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 512Mi
+          config:
+            provider:
+              compaction:
+                compaction:
+                  max_block_bytes: 1073741824 # 1GB blocks
+
+        backendWorker:
+          replicas: 1
+          persistence:
+            enabled: true
+            size: 5Gi
+            storageClass: openebs-lvm
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1024Mi
+
+        metricsGenerator:
+          enabled: true
+          replicas: 1
+          persistence:
+            enabled: true
+            size: 2Gi
+            storageClass: openebs-lvm
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1024Mi
+          config:
+            storage:
+              path: "/var/tempo/wal"
+            remote_write:
+              - url: "http://mimir-distributor.mimir.svc.cluster.local:8080/api/v1/push"
+
+        memcached:
+          enabled: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 512Mi
+
+        gateway:
+          enabled: false
+        enterprise:
+          enabled: false
+        metaMonitoring:
+          serviceMonitor:
+            enabled: false
+          grafanaAgent:
+            enabled: false
+
   destination:
     server: https://kubernetes.default.svc
     namespace: tempo
