@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-tempo-traces-topic
+  namespace: tempo
+  annotations:
+    argocd.argoproj.io/hook: Sync
+spec:
+  template:
+    spec:
+      containers:
+      - name: rpk
+        image: redpandadata/redpanda:v26.2.3
+        command:
+          - /bin/sh
+          - -c
+          - |
+            BROKERS="redpanda.redpanda.svc.cluster.local:9093"
+            TOPIC="tempo-traces"
+            RETENTION="3600000" # 1 hour in milliseconds
+            
+            echo "Waiting for Redpanda to be reachable..."
+            until rpk cluster info --brokers $BROKERS > /dev/null 2>&1; do
+              echo "Redpanda is not ready yet, waiting 5 seconds..."
+              sleep 5
+            done
+            
+            echo "Redpanda is up. Checking if topic exists..."
+            if rpk topic describe $TOPIC --brokers $BROKERS > /dev/null 2>&1; then
+              echo "Topic '$TOPIC' already exists. Updating retention policy to 1 hour..."
+              rpk topic alter-config $TOPIC --set retention.ms=$RETENTION --brokers $BROKERS
+            else
+              echo "Topic '$TOPIC' does not exist. Creating it with a 1-hour retention policy..."
+              # '-p 1' specifies 1 partition
+              rpk topic create $TOPIC -c retention.ms=$RETENTION -p 1 --brokers $BROKERS
+            fi
+      restartPolicy: OnFailure

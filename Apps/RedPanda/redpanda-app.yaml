@@ -23,6 +23,7 @@ spec:
               
         tls:
           enabled: false
+
         auth:
           sasl:
             enabled: false
@@ -35,6 +36,13 @@ spec:
             
         tuning:
           tune_aio_events: false
+        
+        # Uncomment this block ONLY if Tempo is the exclusive user of Redpanda
+        #config:
+        #  cluster:
+        #    log_retention_ms: 3600000 # 1hour
+        #    retention_bytes: 2147483648 # Delete data if partition exceeds 2GB to prevent disk full issues
+
   destination:
     server: https://kubernetes.default.svc
     namespace: redpanda
