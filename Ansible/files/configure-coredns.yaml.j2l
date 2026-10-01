@@ -15,8 +15,8 @@ spec:
           kublab.org:53 {
             errors
             cache 30
-            template IN A kublab.org {
+            {% raw %}template IN A kublab.org {
               match ".*\\.kublab\.org$"
-              answer "{{ .Name }} 60 IN A 10.17.3.100"
-            }
+              answer "{{ .Name }} 60 IN A {% endraw %}{{ lb_ip }}{% raw %}"
+            }{% endraw %}
           }

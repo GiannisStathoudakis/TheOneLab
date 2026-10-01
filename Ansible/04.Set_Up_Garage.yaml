@@ -65,6 +65,7 @@
       register: api_keys
       changed_when: "'Secret key' in api_keys.stdout"
       when: "(item + '-key') not in existing_keys.stdout"
+      no_log: true
 
     - name: 06. Grant API Keys access to their respective buckets
       ansible.builtin.command: >
@@ -83,7 +84,10 @@
         ACCESS_KEY=$(echo "$GARAGE_STDOUT" | grep 'Key ID:' | awk '{print $3}' | tr -d '\r\n')
         SECRET_KEY=$(echo "$GARAGE_STDOUT" | grep 'Secret key:' | awk '{print $3}' | tr -d '\r\n')
         
-        kubectl exec -n vault vault-0 -- sh -c "export VAULT_TOKEN='$VAULT_TOKEN'; vault kv put secret/{{ item.item }} access-key=\"$ACCESS_KEY\" secret-key=\"$SECRET_KEY\""
+        kubectl exec -i -n vault vault-0 -- sh -s << EOF
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put secret/{{ item.item }} access-key="$ACCESS_KEY" secret-key="$SECRET_KEY"
+        EOF
       environment:
         GARAGE_STDOUT: "{{ item.stdout | default('') }}"
         VAULT_TOKEN: "{{ root_token }}" 

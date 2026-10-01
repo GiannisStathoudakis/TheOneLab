@@ -68,10 +68,10 @@
         state: present
         src: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.0/experimental-install.yaml
 
-    - name: 06. Copy CoreDNS HelmChartConfig to RKE2 Manifests
+    - name: 06. Template CoreDNS HelmChartConfig to RKE2 Manifests
       become: true
-      ansible.builtin.copy:
-        src: files/configure-coredns.yaml
+      ansible.builtin.template:
+        src: files/configure-coredns.yaml.j2
         dest: /var/lib/rancher/rke2/server/manifests/rke2-coredns-config.yaml
         owner: root
         group: root

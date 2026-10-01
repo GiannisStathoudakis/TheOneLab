@@ -195,7 +195,7 @@
       ansible.builtin.copy:
         dest: /etc/rancher/rke2/config.yaml
         content: |
-          server: https://{{ hostvars[groups['master'][0]]['ansible_host'] }}:9345
+          server: https://{{ master_ip }}:9345
           token: "{{ node_token }}"
         mode: '0600'
 

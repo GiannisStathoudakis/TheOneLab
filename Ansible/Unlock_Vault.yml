@@ -2,13 +2,13 @@
 - hosts: master
   vars_files:
     - files/cluster-keys.json
+
   tasks:
-    - name: Unlock Vault
-      kubernetes.core.k8s_exec:
-        namespace: vault
-        pod: vault-0
-        command: "vault operator unseal {{ item }}"
-      loop:
-        - "{{ (lookup('file', 'files/cluster-keys.json') | from_json).unseal_keys_b64[0] }}"
-        - "{{ (lookup('file', 'files/cluster-keys.json') | from_json).unseal_keys_b64[1] }}"
-        - "{{ (lookup('file', 'files/cluster-keys.json') | from_json).unseal_keys_b64[2] }}"
+    - name: 01. Unlock Vault
+      ansible.builtin.shell: |
+        kubectl exec -i -n vault vault-0 -- sh -s << EOF
+        vault operator unseal {{ item }}
+        EOF
+      loop: "{{ unseal_keys_b64[0:3] }}"
+      no_log: true
+      changed_when: false
