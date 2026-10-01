@@ -22,6 +22,12 @@ variable "ssh_public_key_path" {
   default     = "~/.ssh/ansible.pub"
 }
 
+variable "create_k8s_network" {
+  description = "Set to true to create the k8s_network, false if it already exists outside this state"
+  type        = bool
+  default     = false
+}
+
 ###############################################
 #Provider Setup
 ###############################################
@@ -42,15 +48,17 @@ provider "libvirt" {
 ###############################################
 #Networking
 ###############################################
-#resource "libvirt_network" "k8s_net" {
-#  name      = "k8s_network"
-#  mode      = "nat" 
-#  domain    = "k8s.local"
-#  addresses = ["10.17.3.0/24"]
-#  dhcp {
-#    enabled = true
-#  }
-#}
+resource "libvirt_network" "k8s_net" {
+  count     = var.create_k8s_network ? 1 : 0
+  
+  name      = "k8s_network"
+  mode      = "nat" 
+  domain    = "k8s.local"
+  addresses = ["10.17.3.0/24"]
+  dhcp {
+    enabled = true
+  }
+}
 
 ###############################################
 #Storage Pools
