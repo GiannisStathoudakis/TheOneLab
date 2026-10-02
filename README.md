@@ -83,7 +83,8 @@ If given a cloud budget, the target architecture shifts from a "Stateful Monolit
 To ensure secure, automated, and reproducible delivery, the microservices utilize a streamlined **DevSecOps** pipeline powered by **GitHub Actions** and **Helm**:
 
 * **Pre-Build Security Scans:** Source code is actively scanned for hardcoded secrets using **GitLeaks** and statically analyzed for vulnerabilities (SAST) using **Semgrep**.
-* **Build & Containerize:** Java applications are built via Maven and packaged into minimal container images using Docker Buildx.
+* **Build & Distroless Containerization:** Java applications are built via Maven in the CI pipeline and packaged into minimal **Distroless JRE** container images using Docker Buildx. By eliminating the OS shell (`sh`/`bash`) and package managers, we achieve a zero-trust runtime with a drastically reduced attack surface, faster cold starts, and minimal resource consumption (FinOps optimization). 
+  *(Note: Because distroless images lack a shell, emergency in-pod troubleshooting is strictly handled via Kubernetes Ephemeral Containers using the `kubectl debug` command. This ensures the base image remains 100% secure while still allowing full diagnostic access when necessary).*
 * **Post-Build Vulnerability Scanning:** Before distribution, **Trivy** scans container images for OS and library-level CVEs.
 * **Image Registry & Provenance:** Production-ready container images are pushed to the **GitHub Container Registry (GHCR)** alongside generated Software Bill of Materials (SBOMs).
 * **Helm Chart Delivery:** Application workloads are packaged into standardized **Helm Charts**, allowing declarative GitOps deployments seamlessly managed by ArgoCD and promoted by Kargo.
