@@ -49,14 +49,14 @@ spec:
           #  path: Apps/Kyverno
           #- app: renovate 
           #  path: Apps/Renovate
-          #- app: mysql 
-          #  path: Apps/MySQL
+          - app: mysql 
+            path: Apps/MySQL
           - app: redpanda 
             path: Apps/RedPanda
           - app: kargo
             path: Apps/Kargo
-          #- app: ecommerce-kargo
-          #  path: Kargo-Control/Ecomerce
+          - app: ecommerce-kargo
+            path: Kargo-Control/Ecomerce
           #- app: rancher
           #  path: Apps/Rancher
 
