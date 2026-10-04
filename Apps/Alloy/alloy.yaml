@@ -60,7 +60,8 @@ spec:
               memory: 1024Mi
 
           securityContext:
-            privileged: true
+            runAsUser: 0
+            runAsGroup: 0
 
           rbac:
             create: true
@@ -133,7 +134,7 @@ spec:
                 targets = discovery.relabel.pod_labels.output
                 rule {
                   source_labels = ["namespace"]
-                  regex         = "garage" 
+                  regex         = "ecommerce" 
                   action        = "drop"
                 }
               }
@@ -142,7 +143,7 @@ spec:
                 targets = discovery.relabel.pod_labels.output
                 rule {
                   source_labels = ["namespace"]
-                  regex         = "garage"
+                  regex         = "ecommerce"
                   action        = "keep"
                 }
               }
@@ -268,29 +269,13 @@ spec:
               }
 
               // ==========================================
-              // 4. Pyroscope (Continuous Profiling)
-              // ==========================================
-              pyroscope.ebpf "default" {
-                targets    = discovery.relabel.app_pods.output
-                forward_to = [pyroscope.write.pyroscope.receiver]
-                python_enabled = false
-              }
-
-              pyroscope.write "pyroscope" {
-                endpoint {
-                  url = "http://pyroscope-distributor.pyroscope.svc.cluster.local:4040"
-                }
-              }
-
-              // ==========================================
-              // 5. OTLP Pipeline (Traces & Beyla Metrics)
+              // 4. OTLP Pipeline (Traces from Java Agents)
               // ==========================================
               otelcol.receiver.otlp "default" {
                 grpc { endpoint = "0.0.0.0:4317" }
                 http { endpoint = "0.0.0.0:4318" }
                 output {
                   traces  = [otelcol.processor.filter.drop_noise.input]
-                  metrics = [otelcol.processor.transform.add_namespace.input]
                 }
               }
 
@@ -305,52 +290,13 @@ spec:
                   ]
                 }
                 output {
-                  traces = [otelcol.processor.batch.traces.input]
-                }
-              }
-
-              otelcol.processor.transform "add_namespace" {
-                error_mode = "ignore"
-                metric_statements {
-                  context = "datapoint"
-                  statements = [
-                    `set(datapoint.attributes["namespace"], resource.attributes["k8s.namespace.name"])`,
-                    `set(datapoint.attributes["pod"], resource.attributes["k8s.pod.name"])`,
-                    `set(datapoint.attributes["container"], resource.attributes["k8s.container.name"])`,
-                  ]
-                }
-                output {
-                  metrics = [otelcol.processor.batch.metrics.input]
-                }
-              }
-
-              otelcol.processor.batch "traces" {
-                output {
                   traces = [otelcol.exporter.otlp.tempo.input]
                 }
               }
 
-              otelcol.processor.batch "metrics" {
-                output {
-                  metrics = [otelcol.exporter.prometheus.to_mimir_app.input]
-                }
-              }
-
-              otelcol.exporter.otlp "tempo" {
-                client {
-                  endpoint = "tempo-distributor.tempo.svc.cluster.local:4317"
-                  tls {
-                    insecure = true
-                  }
-                }
-              }
-
-              otelcol.exporter.prometheus "to_mimir_app" {
-                forward_to = [prometheus.remote_write.mimir_app.receiver]
-              }
 
               // ==========================================
-              // 6. Prometheus Service Discovery (Endpoints)
+              // 5. Prometheus Service Discovery (Endpoints)
               // ==========================================
               discovery.kubernetes "endpoints" {
                 role = "endpoints"
@@ -393,25 +339,7 @@ spec:
               }
 
               // ==========================================
-              // 7. eBPF Auto-Instrumentation
-              // ==========================================
-              beyla.ebpf "auto_instrumentation" {
-                discovery {
-                  instrument {
-                    kubernetes {
-                      namespace = "garage" 
-                    }
-                  }
-                }
-                
-                output {
-                  traces  = [otelcol.processor.filter.drop_noise.input]
-                  metrics = [otelcol.processor.batch.metrics.input]
-                }
-              }
-
-              // ==========================================
-              // 8. Host/Node Metrics (Embedded Node Exporter)
+              // 6. Host/Node Metrics (Embedded Node Exporter)
               // ==========================================
               prometheus.exporter.unix "host" {
                 procfs_path = "/host/proc"
