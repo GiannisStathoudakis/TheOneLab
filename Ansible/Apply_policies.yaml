@@ -4,4 +4,4 @@
     - name: 01. Apply Application
       kubernetes.core.k8s:
         state: present
-        src: "https://raw.githubusercontent.com/GiannisStathoudakis/TheOneLab/master/Bootstrap/apply-policies.yaml?v=4"
+        src: "https://raw.githubusercontent.com/GiannisStathoudakis/TheOneLab/main/Bootstrap/apply-policies.yaml?v=4"
