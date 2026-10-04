@@ -55,8 +55,8 @@ spec:
             path: Apps/RedPanda
           - app: kargo
             path: Apps/Kargo
-          #- app: ecommerce-kargo
-          #  path: Kargo-Control/Ecomerce
+          - app: ecommerce-kargo
+            path: Kargo-Control/Ecomerce
           #- app: rancher
           #  path: Apps/Rancher
 
