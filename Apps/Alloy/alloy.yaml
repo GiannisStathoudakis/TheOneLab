@@ -296,7 +296,7 @@ spec:
                     `attributes["http.target"] == "/ready"`,
                     `attributes["http.route"] == "/healthz"`,
                     `attributes["url.path"] == "/ready"`,
-                    `attributes["url.path"] == "/healthz"`
+                    `attributes["url.path"] == "/healthz"`,
                   ]
                 }
                 output {
