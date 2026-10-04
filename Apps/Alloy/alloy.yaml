@@ -290,10 +290,24 @@ spec:
                   ]
                 }
                 output {
+                  traces = [otelcol.processor.batch.traces.input] 
+                }
+              }
+
+              otelcol.processor.batch "traces" {
+                output {
                   traces = [otelcol.exporter.otlp.tempo.input]
                 }
               }
 
+              otelcol.exporter.otlp "tempo" {
+                client {
+                  endpoint = "tempo-distributor.tempo.svc.cluster.local:4317"
+                  tls {
+                    insecure = true
+                  }
+                }
+              }
 
               // ==========================================
               // 5. Prometheus Service Discovery (Endpoints)
