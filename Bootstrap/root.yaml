@@ -53,8 +53,8 @@ spec:
             path: Apps/MySQL
           - app: redpanda 
             path: Apps/RedPanda
-          #- app: kargo
-          #  path: Apps/Kargo
+          - app: kargo
+            path: Apps/Kargo
           - app: ecommerce-kargo
             path: Kargo-Control/Ecomerce
           #- app: rancher
