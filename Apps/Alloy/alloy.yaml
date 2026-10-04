@@ -134,7 +134,7 @@ spec:
                 targets = discovery.relabel.pod_labels.output
                 rule {
                   source_labels = ["namespace"]
-                  regex         = "ecommerce" 
+                  regex         = "ecommerce|garage"
                   action        = "drop"
                 }
               }
@@ -143,7 +143,7 @@ spec:
                 targets = discovery.relabel.pod_labels.output
                 rule {
                   source_labels = ["namespace"]
-                  regex         = "ecommerce"
+                  regex         = "ecommerce|garage"
                   action        = "keep"
                 }
               }
@@ -288,8 +288,15 @@ spec:
                 error_mode = "ignore"
                 traces {
                   span = [
-                    `IsMatch(attributes["http.target"], ".*/actuator/health.*")`,
-                    `attributes["http.target"] == "/metrics"`,
+                    `IsMatch(name, ".*actuator/health.*")`,
+                    `IsMatch(attributes["http.target"], ".*actuator/health.*")`,
+                    `IsMatch(attributes["url.path"], ".*actuator/health.*")`,
+
+                    `attributes["http.target"] == "/health"`,
+                    `attributes["http.target"] == "/ready"`,
+                    `attributes["http.route"] == "/healthz"`,
+                    `attributes["url.path"] == "/ready"`,
+                    `attributes["url.path"] == "/healthz"`
                   ]
                 }
                 output {
