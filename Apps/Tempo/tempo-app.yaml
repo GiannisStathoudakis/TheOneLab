@@ -145,6 +145,10 @@ spec:
               cpu: 500m
               memory: 1024Mi
           config:
+            processor:
+              span_metrics:
+                dimensions:
+                  - "k8s.namespace.name"
             storage:
               path: "/var/tempo/wal"
             remote_write:
