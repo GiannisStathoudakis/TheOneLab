@@ -92,7 +92,7 @@ spec:
           configMap:
             content: |-
               // ==========================================
-              // 1. Pod Discovery & Split
+              // 1. Pod Discovery & Labels
               // ==========================================
               discovery.kubernetes "pods" {
                 role = "pod"
@@ -184,36 +184,8 @@ spec:
               }
 
               // ==========================================
-              // 3. Loki (Pod Stdout/Stderr Application Logs)
+              // 3. Loki Infrastructure Logs & Writers
               // ==========================================
-              loki.source.kubernetes "app_logs" {
-                targets    = discovery.relabel.app_pods.output
-                forward_to = [loki.process.app_logs_parse.receiver]
-              }
-              loki.process "app_logs_parse" {
-                forward_to = [loki.write.loki_app.receiver]
-                stage.multiline {
-                  firstline = "^\\d{4}-\\d{2}-\\d{2}"
-                  max_wait_time = "3s"
-                  max_lines = 128
-                }
-                stage.regex {
-                  expression = "(?i)\\b(?P<level>INFO|DEBUG|WARN|WARNING|ERROR|FATAL|TRACE|EXCEPTION)\\b"
-                }
-                stage.labels {
-                  values = { level = "level" }
-                }
-              }
-              loki.write "loki_app" {
-                endpoint {
-                  url = "http://loki-write.loki.svc.cluster.local:3100/loki/api/v1/push"
-                  tenant_id = "app"
-                }
-                wal {
-                  enabled = true
-                }
-              }
-
               loki.source.kubernetes "infra_logs" {
                 targets    = discovery.relabel.infra_pods.output
                 forward_to = [loki.process.infra_logs_parse.receiver]
@@ -245,7 +217,17 @@ spec:
                   enabled = true
                 }
               }
-              
+
+              loki.write "loki_app" {
+                endpoint {
+                  url = "http://loki-write.loki.svc.cluster.local:3100/loki/api/v1/push"
+                  tenant_id = "app"
+                }
+                wal {
+                  enabled = true
+                }
+              }
+
               local.file_match "tetragon_logs" {
                 path_targets = [{"__path__" = "/var/log/tetragon/tetragon.log"}]
               }
@@ -275,7 +257,7 @@ spec:
               }
 
               // ==========================================
-              // 4. OTLP Pipeline (Traces & Metrics)
+              // 4. OTLP Pipeline (Traces, Metrics & App Logs)
               // ==========================================
               otelcol.receiver.otlp "default" {
                 grpc { endpoint = "0.0.0.0:4317" }
@@ -283,7 +265,29 @@ spec:
                 output {
                   traces  = [otelcol.processor.filter.drop_noise.input]
                   metrics = [otelcol.processor.transform.add_namespace.input]
+                  logs    = [otelcol.processor.batch.logs.input]
                 }
+              }
+
+              otelcol.processor.transform "map_log_level" {
+               error_mode = "ignore"
+               log_statements {
+                 context = "log"
+                 statements = [
+                   `set(resource.attributes["level"], severity_text)`,
+                 ]
+               }
+               output {
+                 logs = [otelcol.processor.batch.logs.input]
+               }
+             }
+
+              otelcol.processor.batch "logs" {
+                output { logs = [otelcol.exporter.loki.to_loki_app.input] }
+              }
+
+              otelcol.exporter.loki "to_loki_app" {
+               forward_to = [loki.write.loki_app.receiver]
               }
 
               otelcol.processor.filter "drop_noise" {
@@ -383,7 +387,7 @@ spec:
               }
 
               // ==========================================
-              // 6. Host/Node Metrics (Embedded Node Exporter)
+              // 6. Host/Node Metrics
               // ==========================================
               prometheus.exporter.unix "host" {
                 procfs_path = "/host/proc"
