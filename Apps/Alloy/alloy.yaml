@@ -269,6 +269,19 @@ spec:
                     `set(attributes["loki.attribute.labels"], "level")`,
                   ]
                 }
+                
+                resource_statements {
+                  context = "resource"
+                  statements = [
+                    // Μετονομάζουμε τα OTel K8s attributes σε απλά ονόματα (όπως στα infra logs)
+                    `set(attributes["namespace"], attributes["k8s.namespace.name"])`,
+                    `set(attributes["pod"], attributes["k8s.pod.name"])`,
+                    `set(attributes["container"], attributes["k8s.container.name"])`,
+                    `set(attributes["service_name"], attributes["service.name"])`,
+                    `set(attributes["loki.resource.labels"], "namespace, pod, container, service_name")`,
+                  ]
+                }
+                
                 output {
                   logs = [otelcol.processor.batch.logs.input]
                 }
