@@ -47,7 +47,7 @@ spec:
           limits_config:
             retention_period: 8760h 
             retention_stream:
-              - selector: '{level=~"info|debug|trace"}'
+              - selector: '{level=~"INFO|DEBUG|TRACE"}'
                 priority: 1
                 period: 336h
               - selector: '{log_type="tetragon_security"}'
