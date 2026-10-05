@@ -193,7 +193,7 @@ spec:
               loki.process "app_logs_parse" {
                 forward_to = [loki.write.loki_app.receiver]
                 stage.multiline {
-                  firstline = "^(?:\\d{2}:\\d{2}:\\d{2}\\.\\d{3}|\\d{4}-\\d{2}-\\d{2}|\\[)"
+                  firstline = "^(?!\\s|at\\s|Caused by|\\.{3}).*"
                   max_wait_time = "3s"
                   max_lines = 128
                 }
@@ -201,8 +201,11 @@ spec:
                   expressions = { level = "level" }
                   drop_malformed = false 
                 }
-                stage.regex {
-                  expression = "(?i)(?:^|\\s|\\[|level=)(?P<level>INFO|DEBUG|WARN|WARNING|ERROR|FATAL|TRACE)(?:$|\\s|\\]|:)"
+                stage.match {
+                  selector = "{level=\"\"}"
+                  stage.regex {
+                    expression = "(?i)\\b(?P<level>ERROR|WARN|INFO|DEBUG|FATAL|EXCEPTION)\\b"
+                  }
                 }
                 stage.template {
                   source   = "level"
