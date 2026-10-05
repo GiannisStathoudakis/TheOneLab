@@ -134,17 +134,8 @@ spec:
                 targets = discovery.relabel.pod_labels.output
                 rule {
                   source_labels = ["namespace"]
-                  regex         = "ecommerce|garage"
+                  regex         = "ecommerce"
                   action        = "drop"
-                }
-              }
-
-              discovery.relabel "app_pods" {
-                targets = discovery.relabel.pod_labels.output
-                rule {
-                  source_labels = ["namespace"]
-                  regex         = "ecommerce|garage"
-                  action        = "keep"
                 }
               }
 
@@ -269,21 +260,20 @@ spec:
                 }
               }
 
-              // 1. Παίρνει το severity_text και το κάνει resource attribute "level"
               otelcol.processor.transform "map_log_level" {
                 error_mode = "ignore"
                 log_statements {
                   context = "log"
                   statements = [
-                    `set(resource.attributes["level"], severity_text)`,
+                    `set(attributes["level"], severity_text)`,
+                    `set(attributes["loki.attribute.labels"], "level")`
                   ]
                 }
                 output {
-                  logs = [otelcol.processor.attributes.loki_labels.input]
+                  logs = [otelcol.processor.batch.logs.input]
                 }
               }
 
-              // 2. Δίνει το κρίσιμο hint στον loki exporter για να κάνει το level Loki Stream Label
               otelcol.processor.attributes "loki_labels" {
                 action {
                   key    = "loki.resource.labels"
