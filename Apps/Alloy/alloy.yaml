@@ -202,11 +202,11 @@ spec:
                   drop_malformed = false 
                 }
                 stage.regex {
-                  expression = "(?i).*?(?P<level>INFO|DEBUG|WARN|WARNING|ERROR|FATAL|TRACE|EXCEPTION)\\b"
+                  expression = "(?i)(?P<level>info|debug|warn|warning|error|fatal|exception)\\b"
                 }
                 stage.template {
                   source   = "level"
-                  template = "{{ if eq .level \"Exception\" }}error{{ else if eq .level \"EXCEPTION\" }}error{{ else if eq .level \"exception\" }}error{{ else if .level }}{{ .level }}{{ else }}info{{ end }}"
+                  template = "{{ if .level }}{{ .level }}{{ else }}info{{ end }}"
                 }
                 stage.labels {
                   values = { level = "level" }
