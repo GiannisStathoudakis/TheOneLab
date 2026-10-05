@@ -198,11 +198,7 @@ spec:
                   max_lines = 128
                 }
                 stage.regex {
-                  expression = "(?i)\\b(?P<level>INFO|DEBUG|WARN|WARNING|ERROR|FATAL|TRACE|EXCEPTION)\\b"
-                }
-                stage.template {
-                  source   = "level"
-                  template = "{{ if .level }}{{ .level }}{{ else }}info{{ end }}"
+                  expression = "^\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\s+(?P<level>INFO|DEBUG|WARN|WARNING|ERROR|FATAL|TRACE)\\b"
                 }
                 stage.labels {
                   values = { level = "level" }
