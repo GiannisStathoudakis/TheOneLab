@@ -274,13 +274,14 @@ spec:
               }
 
               // ==========================================
-              // 4. OTLP Pipeline (Traces from Java Agents)
+              // 4. OTLP Pipeline (Traces & Metrics)
               // ==========================================
               otelcol.receiver.otlp "default" {
                 grpc { endpoint = "0.0.0.0:4317" }
                 http { endpoint = "0.0.0.0:4318" }
                 output {
                   traces  = [otelcol.processor.filter.drop_noise.input]
+                  metrics = [otelcol.processor.transform.add_namespace.input]
                 }
               }
 
@@ -291,7 +292,6 @@ spec:
                     `IsMatch(name, ".*actuator/health.*")`,
                     `IsMatch(attributes["http.target"], ".*actuator/health.*")`,
                     `IsMatch(attributes["url.path"], ".*actuator/health.*")`,
-
                     `attributes["http.target"] == "/health"`,
                     `attributes["http.target"] == "/ready"`,
                     `attributes["http.route"] == "/healthz"`,
@@ -304,19 +304,38 @@ spec:
                 }
               }
 
-              otelcol.processor.batch "traces" {
-                output {
-                  traces = [otelcol.exporter.otlp.tempo.input]
+              otelcol.processor.transform "add_namespace" {
+                error_mode = "ignore"
+                metric_statements {
+                  context = "datapoint"
+                  statements = [
+                    `set(datapoint.attributes["namespace"], resource.attributes["k8s.namespace.name"])`,
+                    `set(datapoint.attributes["pod"], resource.attributes["k8s.pod.name"])`,
+                    `set(datapoint.attributes["container"], resource.attributes["k8s.container.name"])`,
+                  ]
                 }
+                output {
+                  metrics = [otelcol.processor.batch.metrics.input]
+                }
+              }
+
+              otelcol.processor.batch "traces" {
+                output { traces = [otelcol.exporter.otlp.tempo.input] }
+              }
+
+              otelcol.processor.batch "metrics" {
+                output { metrics = [otelcol.exporter.prometheus.to_mimir_app.input] }
               }
 
               otelcol.exporter.otlp "tempo" {
                 client {
                   endpoint = "tempo-distributor.tempo.svc.cluster.local:4317"
-                  tls {
-                    insecure = true
-                  }
+                  tls { insecure = true }
                 }
+              }
+
+              otelcol.exporter.prometheus "to_mimir_app" {
+                forward_to = [prometheus.remote_write.mimir_app.receiver]
               }
 
               // ==========================================
