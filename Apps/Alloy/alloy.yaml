@@ -193,7 +193,7 @@ spec:
               loki.process "app_logs_parse" {
                 forward_to = [loki.write.loki_app.receiver]
                 stage.multiline {
-                  firstline = "^(\\d{2}:\\d{2}:\\d{2}\\.\\d{3}|\\[)"
+                  firstline = "^((?:\\d{4}-\\d{2}-\\d{2}\\s+)?\\d{2}:\\d{2}:\\d{2}\\.\\d{3}|\\[)"
                   max_wait_time = "3s"
                   max_lines = 128
                 }
