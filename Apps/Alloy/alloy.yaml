@@ -266,7 +266,7 @@ spec:
                   context = "log"
                   statements = [
                     `set(attributes["level"], severity_text)`,
-                    `set(attributes["loki.attribute.labels"], "level")`
+                    `set(attributes["loki.attribute.labels"], "level")`,
                   ]
                 }
                 output {
