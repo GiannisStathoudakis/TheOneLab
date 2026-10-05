@@ -193,7 +193,7 @@ spec:
               loki.process "app_logs_parse" {
                 forward_to = [loki.write.loki_app.receiver]
                 stage.multiline {
-                  firstline = "^\\d{4}-\\d{2}-\\d{2}[T\\s]\\d{2}:\\d{2}:\\d{2}"
+                  firstline = "^(\\d{2}:\\d{2}:\\d{2}\\.\\d{3}|\\[)"
                   max_wait_time = "3s"
                   max_lines = 128
                 }
@@ -202,10 +202,14 @@ spec:
                   drop_malformed = false 
                 }
                 stage.regex {
-                  expression = "^\\d{4}-\\d{2}-\\d{2}[T\\s]\\d{2}:\\d{2}:\\d{2}\\.\\d+Z?\\s+(?P<level>INFO|DEBUG|WARN|WARNING|ERROR|FATAL|TRACE)\\s+"
+                  expression = "(?i)(?:level=|level:\\s+|\\s|\\[|^).*?(?P<level>INFO|DEBUG|WARN|WARNING|ERROR|FATAL|TRACE)?\\s+"
                 }
                 stage.labels {
                   values = { level = "level" }
+                }
+                stage.template {
+                  source   = "level"
+                  template = "{{ if .level }}{{ .level | toLower }}{{ else }}info{{ end }}"
                 }
               }
               loki.write "loki_app" {
@@ -224,6 +228,11 @@ spec:
               }
               loki.process "infra_logs_parse" {
                 forward_to = [loki.write.loki_infra.receiver]
+                stage.multiline {
+                  firstline = "^\\d{4}-\\d{2}-\\d{2}[T\\s]\\d{2}:\\d{2}:\\d{2}"
+                  max_wait_time = "3s"
+                  max_lines = 128
+                }
                 stage.json {
                   expressions = { level = "level" }
                   drop_malformed = false 
