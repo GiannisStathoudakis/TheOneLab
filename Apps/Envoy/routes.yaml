@@ -115,7 +115,7 @@ spec:
   - "pyroscope.kublab.org"
   rules:
   - backendRefs:
-    - name: pyroscope-query-frontend
+    - name: pyroscope
       port: 4040
 ---
 # -----------------------------
