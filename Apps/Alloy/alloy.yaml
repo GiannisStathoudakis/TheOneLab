@@ -269,6 +269,7 @@ spec:
                 }
               }
 
+              // 1. Παίρνει το severity_text και το κάνει resource attribute "level"
               otelcol.processor.transform "map_log_level" {
                 error_mode = "ignore"
                 log_statements {
@@ -276,6 +277,18 @@ spec:
                   statements = [
                     `set(resource.attributes["level"], severity_text)`,
                   ]
+                }
+                output {
+                  logs = [otelcol.processor.attributes.loki_labels.input]
+                }
+              }
+
+              // 2. Δίνει το κρίσιμο hint στον loki exporter για να κάνει το level Loki Stream Label
+              otelcol.processor.attributes "loki_labels" {
+                action {
+                  key    = "loki.resource.labels"
+                  action = "insert"
+                  value  = "level, service.name, k8s.namespace.name"
                 }
                 output {
                   logs = [otelcol.processor.batch.logs.input]
