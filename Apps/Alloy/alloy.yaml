@@ -209,7 +209,7 @@ spec:
                 }
                 stage.template {
                   source   = "level"
-                  template = "{{ if .level }}{{ .level | toLower }}{{ else }}info{{ end }}"
+                  template = "{{ if .level }}{{ .level }}{{ else }}info{{ end }}"
                 }
               }
               loki.write "loki_app" {
