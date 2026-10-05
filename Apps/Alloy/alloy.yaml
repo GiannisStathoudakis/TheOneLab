@@ -265,29 +265,21 @@ spec:
                 output {
                   traces  = [otelcol.processor.filter.drop_noise.input]
                   metrics = [otelcol.processor.transform.add_namespace.input]
-                  logs    = [otelcol.processor.batch.logs.input]
+                  logs    = [otelcol.processor.transform.map_log_level.input]
                 }
               }
 
               otelcol.processor.transform "map_log_level" {
-               error_mode = "ignore"
-               log_statements {
-                 context = "log"
-                 statements = [
-                   `set(resource.attributes["level"], severity_text)`,
-                 ]
-               }
-               output {
-                 logs = [otelcol.processor.batch.logs.input]
-               }
-             }
-
-              otelcol.processor.batch "logs" {
-                output { logs = [otelcol.exporter.loki.to_loki_app.input] }
-              }
-
-              otelcol.exporter.loki "to_loki_app" {
-               forward_to = [loki.write.loki_app.receiver]
+                error_mode = "ignore"
+                log_statements {
+                  context = "log"
+                  statements = [
+                    `set(resource.attributes["level"], severity_text)`,
+                  ]
+                }
+                output {
+                  logs = [otelcol.processor.batch.logs.input]
+                }
               }
 
               otelcol.processor.filter "drop_noise" {
@@ -330,6 +322,14 @@ spec:
 
               otelcol.processor.batch "metrics" {
                 output { metrics = [otelcol.exporter.prometheus.to_mimir_app.input] }
+              }
+
+              otelcol.processor.batch "logs" {
+                output { logs = [otelcol.exporter.loki.to_loki_app.input] }
+              }
+
+              otelcol.exporter.loki "to_loki_app" {
+                forward_to = [loki.write.loki_app.receiver]
               }
 
               otelcol.exporter.otlp "tempo" {
