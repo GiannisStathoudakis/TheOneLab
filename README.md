@@ -68,11 +68,11 @@ If given a cloud budget, the target architecture shifts from a "Stateful Monolit
 | Component | Role |
 | :--- | :--- |
 | **Grafana** | Unified dashboard visualization, Alerting and APM UI |
-| **Grafana Alloy** | Primary telemetry pipeline acting as a **Unified Agent**. It features **Intelligent Multi-Tenancy Routing**, **Embedded Host Metrics**, and **Native eBPF Auto-Instrumentation (Beyla)**. It dynamically splits telemetry into distinct 'App' and 'Infra' tenants at the edge, and utilizes OTel filter processors to proactively drop high-cardinality noise (e.g., `/health` and `/metrics` traces) before routing them to the decoupled backends. |
+| **Grafana Alloy** | Primary telemetry pipeline acting as a **Unified Agent**. It seamlessly ingests all application telemetry (**logs, metrics, traces, and profiles**) natively via OTLP directly from the Spring Boot OpenTelemetry Agents. It features **Intelligent Multi-Tenancy Routing** and **Embedded Host Metrics**. It dynamically splits telemetry into distinct 'App' and 'Infra' tenants at the edge, and utilizes OTel filter processors to proactively drop high-cardinality noise (e.g., `/health` and `/ready` traces) before routing them to the decoupled backends. |
 | **Grafana Mimir (Distributed)** | Horizontally scalable, highly available time-series metrics database. Deployed in microservices topology (Isolating Read/Write paths). *(FinOps optimized: S3-backed storage with Memcached acceleration)* |
 | **Loki (SimpleScalable)** | Log aggregation and querying. Decouples ingestion from querying to prevent heavy searches from impacting log writes. *(FinOps optimized: S3-backed storage with dynamic stream-level retention)* |
 | **Tempo (Distributed)** | Highly scalable tracing backend. Utilizes an event-driven architecture by consuming traces from **Redpanda (Kafka API)** to prevent data loss during traffic spikes. Includes an active Metrics-Generator for RED metrics. *(FinOps optimized: S3-backed with strict 7-day retention)* |
-| **Pyroscope (Distributed)** | eBPF-powered continuous application profiling backend. Deployed using the v2 Phlare-based microservices architecture. *(FinOps optimized: S3-backed storage)* |
+| **Pyroscope** | Continuous application profiling backend. It ingests JFR profiles natively via OTLP directly from the Spring Boot applications. *(FinOps optimized: S3-backed with strict 7-day retention)* |
 | **Robusta KRR** | *(Planned)* Kubernetes Resource Recommender for compute right-sizing and minimizing idle over-provisioning |
 | **Hubble** | Network and service communication flow observability (via Cilium) |
 
