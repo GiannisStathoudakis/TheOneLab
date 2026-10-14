@@ -153,9 +153,27 @@
             project: "default"
             sshPrivateKey: "{{ github_ssh_private_key }}"
     
-    - name: 15. Trigger GitOps Apply Root Application
+    - name: 15. Trigger GitOps Apply Root Bootstrap Application
       kubernetes.core.k8s:
         state: present
-        src: "https://raw.githubusercontent.com/GiannisStathoudakis/TheOneLab/main/Bootstrap/root.yaml?v=3"
+        definition:
+          apiVersion: argoproj.io/v1alpha1
+          kind: Application
+          metadata:
+            name: bootstrap-root
+            namespace: argocd
+          spec:
+            project: default
+            source:
+              repoURL: "git@github.com:GiannisStathoudakis/TheOneLab.git"
+              targetRevision: HEAD
+              path: Bootstrap
+            destination:
+              server: https://kubernetes.default.svc
+              namespace: argocd
+            syncPolicy:
+              automated:
+                prune: true
+                selfHeal: true
 
 #kubectl port-forward svc/argocd-server -n argocd 8080:443 --address 0.0.0.0
