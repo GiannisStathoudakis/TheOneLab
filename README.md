@@ -79,9 +79,9 @@ If given a cloud budget, the target architecture shifts from a "Stateful Monolit
 ## CI/CD & DevSecOps Pipeline
 
 > **Implementation Note:** The application build definitions, container hardening, and packaging logic are maintained inside the application source repository: **[`springboot-kafka-streams-microservices-demo`](https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo)**.
-> - **CI Workflows:** [`.github/workflows/`](https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo/tree/master/.github/workflows) 
-> - **Container Security:** [`Dockerfile`](https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo/blob/master/ms-orders/Dockerfile) 
-> - **Deployment Manifests:** [`charts/`](https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo/tree/master/chart)
+> - **GitHub Actions CI:** [`.github/workflows/`](https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo/tree/master/.github/workflows) 
+> - **Hardened Distroless Dockerfile:** [`Dockerfile`](https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo/blob/master/ms-orders/Dockerfile) 
+> - **Helm Packaging & Charts:** [`charts/`](https://github.com/GiannisStathoudakis/springboot-kafka-streams-microservices-demo/tree/master/chart)
 
 To ensure secure, automated, and reproducible delivery, the microservices utilize a streamlined **DevSecOps** pipeline powered by **GitHub Actions** and **Helm**:
 
