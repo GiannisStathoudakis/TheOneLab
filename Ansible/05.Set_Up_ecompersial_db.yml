@@ -56,7 +56,7 @@
             "GRANT ALL PRIVILEGES ON ecommerce.* TO '{% raw %}{{name}}{% endraw %}'@'%';"
           ],
           "revocation_statements": [
-            "SELECT 1;"
+            "DROP USER '{% raw %}{{name}}{% endraw %}'@'%';"
           ],
           "default_ttl": "24h",
           "max_ttl": "24h"
