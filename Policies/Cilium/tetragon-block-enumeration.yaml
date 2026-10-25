@@ -1,3 +1,6 @@
+# NOTE: POC security template targeting tooling & infra workloads (e.g., Grafana/Redpanda).
+# Distroless application workloads lack these system binaries entirely.
+
 apiVersion: cilium.io/v1alpha1
 kind: TracingPolicyNamespaced
 metadata:
