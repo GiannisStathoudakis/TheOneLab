@@ -1,3 +1,7 @@
+# NOTE: 'kubectl exec' is used here strictly for quick homelab bootstrapping.
+# In a production environment, Vault is configured declaratively via Terraform, 
+# and Kafka topics are managed via GitOps rather than CLI commands.
+
 ---
 - hosts: master
   vars_files:
