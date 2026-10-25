@@ -1,3 +1,7 @@
+# NOTE: 'kubectl exec' is used strictly for self-contained homelab bootstrapping.
+# In enterprise production, this is replaced by Cloud KMS Auto-Unseal (AWS/GCP/Azure)
+# and declarative configuration via Terraform / native Vault REST APIs.
+
 ---
 - hosts: master
   vars_files:
