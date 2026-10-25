@@ -1,3 +1,7 @@
+# NOTE: 'kubectl exec' is used here strictly for quick homelab S3 emulation via Garage.
+# In a production environment, managed object storage (e.g., AWS S3) is used instead, 
+# and buckets/keys are provisioned declaratively via Terraform or CRDs.
+
 ---
 - hosts: master
   vars_files:
