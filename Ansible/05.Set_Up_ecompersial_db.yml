@@ -62,8 +62,8 @@
           "revocation_statements": [
             "DROP USER '{% raw %}{{name}}{% endraw %}'@'%';"
           ],
-          "default_ttl": "12h",
-          "max_ttl": "12h"
+          "default_ttl": "14h",
+          "max_ttl": "14h"
         }
         JSON
         EOF
