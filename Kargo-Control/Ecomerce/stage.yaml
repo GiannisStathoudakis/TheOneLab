@@ -1,3 +1,7 @@
+# NOTE: A single 'production' stage is configured here strictly for POC demonstration.
+# The target microservices are forked from a monorepo and are updated together as a 
+# single deployment unit to maintain simplicity and avoid unnecessary repository splitting.
+
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
 metadata:
