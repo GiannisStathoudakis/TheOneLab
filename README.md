@@ -4,11 +4,11 @@ The lab utilizes a custom fork ([springboot-kafka-streams-microservices-demo](ht
 
 It acts as a comprehensive e-commerce microservices application featuring multiple Java Spring Boot services, MySQL database integration (utilizing Vault's dynamic credentials), and real-time event-driven streams powered by Redpanda.
 
-## Target Enterprise Architecture (The Vision)
+## Target Enterprise Architecture & Cloud Topology
 
-While **TheOneLab** is currently constrained to a self-contained non-HA environment (running on just 2 local VMs), it is designed with the architectural primitives to transition seamlessly into a highly available, cloud-native enterprise model. 
+**TheOneLab** is architected around declarative GitOps and cloud-native primitives, designed to bridge the operational gap between edge/on-prem environments and a managed, highly available cloud compute plane.
 
-If given a cloud budget, the target architecture shifts from a "Stateful Monolith Cluster" to a **Stateless Hub-and-Spoke Compute Plane**:
+In an enterprise cloud topology, the platform shifts from a standalone cluster deployment to a **Stateless Hub-and-Spoke Compute Plane**:
 
 * **Multi-Cluster Fleet:** Utilizing **Cilium Cluster Mesh**, the infrastructure would be split into dedicated clusters (e.g., CI/CD Hub, UAT, and Production) sharing a secure, flat, wireguard-encrypted network.
 * **Externalized State (Business-Driven Risk Management):** Decoupling state from the compute plane is driven by a strict risk-vs-reward matrix. While losing an hour of telemetry logs during a cluster crash is an acceptable operational inconvenience, losing customer orders or streaming events is a critical business outage. Therefore, all business-critical state is outsourced to managed services, making the Kubernetes clusters 100% stateless and disposable:
