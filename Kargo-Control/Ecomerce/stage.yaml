@@ -38,8 +38,12 @@ spec:
         - uses: git-commit
           config:
             path: ./workspace
-            message: "chore: update microservices image tags via Kargo"
             
         - uses: git-push
           config:
             path: ./workspace
+
+        - uses: argocd-update
+          config:
+            apps:
+              - name: ecommerce-microservices
