@@ -73,18 +73,7 @@
       changed_when: true
       no_log: true
 
-    - name: 05. Grant ESO API permissions for Database Creds and KV
-      ansible.builtin.shell: |
-        kubectl exec -i -n vault vault-0 -- sh -s << EOF
-        export VAULT_TOKEN='$VAULT_TOKEN'
-        echo 'path "secret/data/*" { capabilities = ["read"] } path "database/creds/*" { capabilities = ["read"] }' | vault policy write eso-policy -
-        EOF
-      environment:
-        VAULT_TOKEN: "{{ root_token }}"
-      changed_when: true
-      no_log: true
-    
-    - name: 06. Initialize Redpanda Kafka Topics
+    - name: 05. Initialize Redpanda Kafka Topics
       ansible.builtin.shell: >
         kubectl exec -n redpanda redpanda-0 -- rpk topic create orders payments stock --partitions 3 --replicas 1 || true
       changed_when: false
