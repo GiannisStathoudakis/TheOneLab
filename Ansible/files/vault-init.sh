@@ -34,8 +34,17 @@ vault write auth/kubernetes/config kubernetes_host="https://kubernetes.default.s
 
 # Configure ESO Policies
 echo "Configuring ESO Policies..."
-echo 'path "secret/data/*" { capabilities = ["read"] }' > /tmp/eso-policy.hcl
-echo 'path "secret/metadata/*" { capabilities = ["read", "list"] }' >> /tmp/eso-policy.hcl
+cat << 'HCL' > /tmp/eso-policy.hcl
+path "secret/data/*" {
+  capabilities = ["read"]
+}
+path "secret/metadata/*" {
+  capabilities = ["read", "list"]
+}
+path "database/creds/*" {
+  capabilities = ["read"]
+}
+HCL
 
 vault policy write eso-policy /tmp/eso-policy.hcl
 
